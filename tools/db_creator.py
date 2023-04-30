@@ -56,17 +56,18 @@ def create_db(root: str,msg_type :str,output: str):
         if file not in zh_files:
             print('在中文文本中找不到英文文本 {}'.format(file))
         # 读取数库
-        table = {}
         eng_kv = read_fmg_xml(eng_dir +'/' + file)
+
         zh_kv = read_fmg_xml(zh_dir+'/' + file)
         for id,english in eng_kv.items():
             if english != "%null%" and english != "[ERROR]":
                 if id in zh_kv:
                     chinese = zh_kv.get(id)
-                    table[int(id)] = split_msg(english,chinese)
+                    slice =  split_msg(english,chinese)
+                    for e,z in slice.items():
+                        db[e] = z
                 else:
                     print("文件{}中文本id为{}的文本发生缺失")
-        db[file] = table
     
     
     with open(output +'/'+msg_type+".json", "w",encoding='utf-8') as f:
@@ -79,7 +80,7 @@ if __name__ == "__main__":
         print("use python db_creator [root_folder]")
         exit()
 
-    create_db(sys.argv[1],'menu','data')
+    create_db(sys.argv[1],'item','data')
 
 
 
