@@ -161,3 +161,7 @@ cython_debug/
 
 *.xml
 *.fmg
+./test_files/*
+./test_files/menu/*
+*.txt
+*.docx
