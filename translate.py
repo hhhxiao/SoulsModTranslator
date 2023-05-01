@@ -84,10 +84,11 @@ class VanillaTranslator:
 
     def __call__(self, s: str):
         s = s.strip()
-        if s in self.item_db:
-            return True, self.item_db[s]
+        # 两个数据库有重的数据，下面的顺序最好不要换
         if s in self.menu_db:
             return True, self.menu_db[s]
+        if s in self.item_db:
+            return True, self.item_db[s]
         return False, s
 
 
@@ -145,7 +146,7 @@ if __name__ == "__main__":
     root = sys.argv[1]
     files = [f for f in os.listdir(root) if f.endswith("xml")]
     if len(files) == 0:
-        print("找不到Xml文件,请使用Yabbr解包dcx文件")
+        print("找不到Xml文件,请使用Yabbr.exe解包dcx文件")
         exit()
 
     translated_path = root + "/trans/"
