@@ -1,0 +1,32 @@
+from docx import Document
+from docx.shared import Inches
+import pypandoc, json
+
+
+def key_table_to_docx(name: str):
+    data = {}
+    with open(name, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    doc = Document()
+    for k, v in data.items():
+        doc.add_paragraph('"' + k + "v")
+    print(data)
+
+
+if __name__ == "__main__":
+    key_table_to_docx("../ConvergenceER/menu/k.json")
+
+# doc = Document()
+# doc.add_paragraph("Hello world")
+# doc.add_paragraph("QAQ")
+# doc.add_paragraph("tnt1")
+# doc.add_paragraph("tnt2")
+# doc.add_paragraph("tnt3")
+# doc.add_paragraph("tnt4")
+# doc.add_paragraph("tnt5")
+# doc.save("demo.docx")
+# output = pypandoc.convert_file(
+#     "../ConvergenceER/menu/k.json", "docx", outputfile="a.docx"
+# )
+# docxFilename = "demo.docx"
+# pypandoc.convert_file(docxFilename, "plain", outputfile="somefile.txt")

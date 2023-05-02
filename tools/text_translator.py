@@ -1,11 +1,24 @@
 import sys, os
-from deep_translator import GoogleTranslator, MicrosoftTranslator, MyMemoryTranslator
+from deep_translator import (
+    GoogleTranslator,
+    MicrosoftTranslator,
+    PonsTranslator,
+    LingueeTranslator,
+    MyMemoryTranslator,
+    YandexTranslator,
+    PapagoTranslator,
+    DeeplTranslator,
+    QcriTranslator,
+    single_detection,
+    batch_detection,
+)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("use python text_translator.py [folder]")
+    s = "戈弗雷 is the first lord of 交界地"
 
-    translated = GoogleTranslator(source="en", target="zh-CN").translate_file(
-        sys.argv[1]
+    print(
+        "Google:      ",
+        GoogleTranslator(
+            source="english", target="chinese (simplified)"
+        ).translate_file("a.docx"),
     )
-    print(translated)
