@@ -21,9 +21,12 @@
         "glowing": "发光的",
         "Shining": "闪亮的",
         "Radiant": "璀璨的",
-        "remnant": "残余"
+        "remnant": "残余",
+        "optimal": "最佳",
+        "good": "好"
     },
     "phases": {
+        "Parrying Dagger": "格挡匕首",
         "remnant crafting": "残余工艺",
         "Eclipse Crest": "日蚀纹章",
         "The resulting concoction": "该混合物",

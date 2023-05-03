@@ -55,7 +55,7 @@ class Glossary:
         return re.sub(r"[a-zA-Z]+", self.try_replace, s)
 
     def __call__(self, s: str) -> Any:
-        return self.lookup_word_table(self.lookup_phase_table(s))
+        return self.lookup_word_table(self.lookup_phase_table(s)).lower()
 
 
 class MachineTranslator:

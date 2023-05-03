@@ -1,7 +1,7 @@
 import sys, os, json
 from ermt import translator
 
-UNPACK_ROOT = "./ConvergenceER"
+UNPACK_ROOT = "./AscenElden_Ascended"
 
 
 def pack(t):
@@ -48,15 +48,14 @@ def translator_type(t: str):
     group.add_translator(translator.VanillaTranslator())
 
     vanilla_glossary = translator.Glossary("data/vanilla_glossary.json")
-    mod_glossary = translator.Glossary(UNPACK_ROOT + "/" + "glossary.json")
+    # mod_glossary = translator.Glossary(UNPACK_ROOT + "/" + "glossary.json")
 
     group.add_translator(
         translator.MachineTranslator(
             root + "/" + "key_table.txt",
             root + "/" + "value_table.txt",
-            [],
-            # [vanilla_glossary, mod_glossary],
-            "save",
+            [vanilla_glossary],
+            "load",
         )
     )
 
@@ -67,7 +66,7 @@ def translator_type(t: str):
 
 if __name__ == "__main__":
     translator_type("menu")
-    # pack("menu")
+    pack("menu")
     translator_type("item")
-    # pack("item")
+    pack("item")
     pass
