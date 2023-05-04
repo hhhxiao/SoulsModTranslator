@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QFont
 
+SPLITOR = "------"
 
 # ------------------------------- TOOLS ---------------------------
 
@@ -47,7 +48,7 @@ def yabber(path: str):
 
     info = result.stdout.decode("utf-8")
     err = result.stderr.decode("utf-8")
-    log = info + err
+    log = (info + err).replace("\n\n", "\n")
     if "Press any key to exit" in log:
         logging.error(log)
     else:
@@ -59,7 +60,7 @@ def read_kv_file(s: str):
     try:
         with open(s, "r", encoding="utf-8") as f:
             content = str(f.read())
-            return [text.strip() for text in content.split("-----")]
+            return [text.strip() for text in content.split(SPLITOR.strip())]
     except:
         return []
 
@@ -131,7 +132,7 @@ class Glossary:
                 self.phase_table[p.capitalize()] = v
                 self.phase_table[p.upper()] = v
         except:
-            logging.error("Can not open Glossary %s", name)
+            logging.error("Can not open glossary %s", name)
 
     def lookup_phase_table(self, s: str):
         for k, v in self.phase_table.items():
@@ -170,9 +171,16 @@ class MachineTranslator:
             eng = read_kv_file(key_path)
             chs = read_kv_file(value_path)
             if len(eng) != len(chs):
-                logging.info("Mismatched KV pairs %s -> %s", key_path, value_path)
+                logging.error(
+                    "Mismatched translation files %s[%d] -> %s[%d]",
+                    key_path,
+                    len(eng),
+                    value_path,
+                    len(chs),
+                )
             else:
                 for i in range(len(eng)):
+                    # logging.debug("%s -> %s", eng[i].strip(), chs[i].strip())
                     self.machin_table[eng[i].strip()] = chs[i].strip()
         elif self.mode == "save":
             self.key_file = open(key_path, "w", encoding="utf-8")
@@ -189,10 +197,11 @@ class MachineTranslator:
             s = glossary(s)
 
         if self.mode == "save":
-            self.key_file.write(s + "\n-----\n")
+            self.key_file.write(s + "\n" + SPLITOR + "\n")
             return True, s
         elif self.mode == "load":
             if s in self.machin_table:
+                logging.debug("Translate: <%s> -> <%s>", s, self.machin_table[s])
                 return True, self.machin_table[s]
             else:
                 return False, s
@@ -258,7 +267,7 @@ class TranslatorGroup:
             if ok:
                 return res
 
-        print("无法翻译: ", phrase)
+        logging.error("Can not translate: %s", phrase)
         return phrase
 
     def translate(self, s: str) -> str:
@@ -638,9 +647,6 @@ def main():
     init_logger()
 
     CONFIG.loadConfig("config.json")
-
-    # mod_path =
-    # create_empty_translate(mod_path)
 
     app = QApplication(sys.argv)
     app.setFont(QFont("微软雅黑", 14))
