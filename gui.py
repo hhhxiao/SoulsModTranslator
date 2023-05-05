@@ -383,9 +383,7 @@ def buildTranslateGroup(
     group.add_translator(IngoreErrorTranslator())
     group.add_translator(VanillaTranslator())
 
-    vanilla_glossary = Glossary("data/vanilla_glossary.json")
-    gls = [vanilla_glossary]
-
+    gls = [Glossary(i) for i in glossaries]
     group.add_translator(MachineTranslator(key_file, value_file, gls, mode))
     return group
 
@@ -573,7 +571,7 @@ class TranslateGUI(QWidget):
         if not os.path.exists(f):
             self.MSG("文件不存在")
         else:
-            os.system(f)
+            subprocess.Popen([f])
 
     def getGlossairs(self):
         return [

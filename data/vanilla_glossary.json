@@ -25,6 +25,8 @@
         "deathblight": "咒死",
         "lightning": "雷",
         "holy": "圣",
+        "poison": "毒",
+        "counterattacks ": "连击",
         "firemonk": "火焰习武修士",
         "fire": "火焰",
         "skill": "战技",
@@ -84,9 +86,11 @@
         "Seal": "印记",
         "Staff": "法杖",
         "haligtree": "圣树",
+        "absorption": "减伤率",
         "golden": "黄金",
         "redmane": "红狮子",
-        "towershield": "塔盾"
+        "towershield": "塔盾",
+        "charging": "蓄力"
     },
     "phases": {
         "damage absorption": "减伤率",
@@ -773,6 +777,7 @@
         "Siofra Aqueduct": "希芙拉导水桥",
         "Hallowhorn Grounds": "角骸灵地",
         "Mohgwyn Dynasty Mausoleum": "蒙格温王朝庙",
-        "Tenebrae Demesne": "迪涅布雷地区"
+        "Tenebrae Demesne": "迪涅布雷地区",
+        "nox empire": "诺克斯王朝"
     }
 }
