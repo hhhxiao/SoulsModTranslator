@@ -26,6 +26,7 @@ jobs:
           cp ./data ./out/
           cp ./Yabber131/ ./out/
           cp ./README.md ./out/
+          cp ./config.json ./out/
         shell: bash
       
       - name: Upload Actions File
