@@ -3,5 +3,6 @@
     "source_lang": "engUS",
     "vanilla_db_path": ".\\data\\",
     "export_as_docx": false,
-    "tmp_path": ".tmp"
+    "tmp_path": ".tmp",
+    "yabber_bin": ".\\Yabber131\\"
 }

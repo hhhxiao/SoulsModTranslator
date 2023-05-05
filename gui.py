@@ -41,21 +41,6 @@ def init_logger():
     )
 
 
-def yabber(path: str):
-    result = subprocess.run(
-        ["Yabber.exe", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-
-    info = result.stdout.decode("utf-8")
-    err = result.stderr.decode("utf-8")
-    log = (info + err).replace("\n\n", "\n")
-    if "Press any key to exit" in log:
-        logging.error(log)
-    else:
-        logging.info(log)
-    return result.returncode == 0
-
-
 def read_kv_file(s: str):
     try:
         with open(s, "r", encoding="utf-8") as f:
@@ -93,7 +78,15 @@ class GlobalConfig:
             self.source_lang = str(data["source_lang"])
             self.export_as_docx = str(data["export_as_docx"])
             self.tmp_path = str(data["tmp_path"])
-            logging.info("config: %s", str(data))
+            self.yabber_bin = str(data["yabber_bin"])
+            self.vanilla_db_path = str(data["yabber_bin"])
+            logging.info("config:")
+            logging.info(" - Inter root: %s", self.inter_root)
+            logging.info(" - Soruce lang: %s", self.source_lang)
+            logging.info(" - Temp path: %s", self.tmp_path)
+            logging.info(" - Yabber path: %s", self.yabber_bin)
+            logging.info(" - Vanialla DB path: %s", self.vanilla_db_path)
+
             return True
         except:
             logging.error("Can not parse logger file %s", path)
@@ -101,6 +94,24 @@ class GlobalConfig:
 
 
 CONFIG = GlobalConfig()
+
+
+# ------------------------------- Yabber ---------------------------
+def yabber(path: str):
+    result = subprocess.run(
+        [os.path.join(CONFIG.yabber_bin, "Yabber.exe"), path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    info = result.stdout.decode("utf-8")
+    err = result.stderr.decode("utf-8")
+    log = (info + err).replace("\n\n", "\n")
+    if "Press any key to exit" in log:
+        logging.error(log)
+    else:
+        logging.info(log)
+    return result.returncode == 0
 
 
 # ------------------------------- 翻译模块 ---------------------------
@@ -232,16 +243,25 @@ class VanillaTranslator:
         self.load_db()
 
     def load_db(self):
-        with open("data/item.json", encoding="utf-8") as item:
+        with open(
+            os.path.join(CONFIG.vanilla_db_path, "item.json"), encoding="utf-8"
+        ) as item:
             self.item_db = json.load(item)
             item.close()
-        with open("data/menu.json", encoding="utf-8") as menu:
+        with open(
+            os.path.join(CONFIG.vanilla_db_path, menu.json), encoding="utf-8"
+        ) as menu:
             self.menu_db = json.load(menu)
             menu.close()
 
         for k in self.menu_db.items():
             if k in self.item_db:
-                print("发现的重复的键 ", k, self.menu_db[k], self.item_db[k])
+                logging.warn(
+                    "Find duplicated key in vanilla DB",
+                    k,
+                    self.menu_db[k],
+                    self.item_db[k],
+                )
 
     def __call__(self, s: str):
         s = s.strip()
