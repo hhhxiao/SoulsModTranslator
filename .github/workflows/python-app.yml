@@ -23,8 +23,8 @@ jobs:
         run: |
           mkdir out
           cp ./dist/main.exe ./out/
-          cp ./data ./out/
-          cp ./Yabber131/ ./out/
+          cp -r ./data ./out/
+          cp -r ./Yabber131/ ./out/
           cp ./README.md ./out/
           cp ./config.json ./out/
         shell: bash
