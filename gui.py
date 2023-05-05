@@ -591,7 +591,7 @@ class TranslateGUI(QWidget):
         if not os.path.exists(f):
             self.MSG("文件不存在")
         else:
-            subprocess.Popen([f])
+            os.startfile(f)
 
     def getGlossairs(self):
         return [
