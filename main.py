@@ -102,12 +102,12 @@ CONFIG = GlobalConfig()
 def yabber(path: str):
     result = subprocess.run(
         [os.path.join(CONFIG.yabber_bin, "Yabber.exe"), path],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
+        text=True,
     )
 
-    info = result.stdout.decode("utf-8")
-    err = result.stderr.decode("utf-8")
+    info = result.stdout
+    err = result.stderr
     log = (info + err).replace("\n\n", "\n")
     if "Press any key to exit" in log:
         logging.error(log)
@@ -214,7 +214,7 @@ class MachineTranslator:
             return True, s
         elif self.mode == "load":
             if s in self.machin_table:
-                logging.debug("Translate: <%s> -> <%s>", s, self.machin_table[s])
+                # logging.debug("Translate: <%s> -> <%s>", s, self.machin_table[s])
                 return True, self.machin_table[s]
             else:
                 return False, s
