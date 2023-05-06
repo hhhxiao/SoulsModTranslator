@@ -67,6 +67,8 @@ class GlobalConfig:
         self.source_lang = "engUS"
         self.export_as_docx = False
         self.tmp_path = "tmp"
+        self.yabber_bin = ".\\Yabber131\\"
+        self.vanilla_db_path = ".\\data\\"
 
     def loadConfig(self, path: str):
         try:
@@ -79,7 +81,7 @@ class GlobalConfig:
             self.export_as_docx = str(data["export_as_docx"])
             self.tmp_path = str(data["tmp_path"])
             self.yabber_bin = str(data["yabber_bin"])
-            self.vanilla_db_path = str(data["yabber_bin"])
+            self.vanilla_db_path = str(data["vanilla_db_path"])
             logging.info("config:")
             logging.info(" - Inter root: %s", self.inter_root)
             logging.info(" - Soruce lang: %s", self.source_lang)
@@ -249,7 +251,7 @@ class VanillaTranslator:
             self.item_db = json.load(item)
             item.close()
         with open(
-            os.path.join(CONFIG.vanilla_db_path, menu.json), encoding="utf-8"
+            os.path.join(CONFIG.vanilla_db_path, "menu.json"), encoding="utf-8"
         ) as menu:
             self.menu_db = json.load(menu)
             menu.close()
