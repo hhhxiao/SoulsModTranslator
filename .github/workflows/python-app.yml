@@ -24,10 +24,11 @@ jobs:
           mkdir out
           cp ./dist/main.exe ./out/
           cp -r ./data ./out/
-          cp -r ./Yabber131/ ./out/
+          cp -r ./Yabber131/ ./out/ 
           cp ./README.txt ./out/
           cp ./config.json ./out/
           cp ./更新日志.txt ./out/
+          cp ./点我运行.bat ./out
         shell: bash
       
       - name: Upload Actions File

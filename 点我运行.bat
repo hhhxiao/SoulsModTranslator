@@ -1,0 +1,1 @@
+start /d "." main.exe
