@@ -48,6 +48,7 @@
         "erdtree": "黄金树",
         "shardbearer": "碎片君王",
         "ranni": "拉妮",
+        "renalla": "蕾娜菈",
         "melina": "梅琳娜",
         "gurranq": "古兰格",
         "caelid": "盖里德",
@@ -69,7 +70,6 @@
         "incantations": "祷告",
         "incantation": "祷告",
         "remembrance": "追忆",
-        "somber": "失色",
         "glintstone": "辉石",
         "physical": "物理",
         "greatshield": "大盾",
@@ -90,7 +90,8 @@
         "golden": "黄金",
         "redmane": "红狮子",
         "towershield": "塔盾",
-        "charging": "蓄力"
+        "charging": "蓄力",
+        "carian": "卡利亚"
     },
     "phases": {
         "damage absorption": "减伤率",

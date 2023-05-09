@@ -28,7 +28,7 @@ jobs:
           cp ./README.txt ./out/
           cp ./config.json ./out/
           cp ./更新日志.txt ./out/
-          cp ./点我运行.bat ./out
+          cp ./点我运行.bat ./outs
         shell: bash
       
       - name: Upload Actions File
