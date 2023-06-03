@@ -16,11 +16,11 @@ from PyQt6.QtWidgets import (
     QLabel,
     QFileDialog,
     QMessageBox,
-    QTextBrowser,
 )
 from PyQt6.QtGui import QFont
 
 SPLITOR = "------"
+VERSION = "v0.25"
 
 # ------------------------------- TOOLS ---------------------------
 
@@ -266,40 +266,69 @@ class VanillaTranslator:
                 )
 
     def __call__(self, s: str):
-        s = s.strip()
+        x = s.strip("!.,?")
         # 两个数据库有重的数据，下面的顺序最好不要换
-        if s in self.menu_db:
-            return True, self.menu_db[s]
-        if s in self.item_db:
-            return True, self.item_db[s]
+        if x in self.menu_db:
+            return True, s.replace(x, self.menu_db[x])
+        if x in self.item_db:
+            return True, s.replace(x, self.item_db[x])
         return False, s
 
 
 class TranslatorGroup:
-    def __init__(self) -> None:
-        self.translators = []
-        pass
+    def parse_text(text: str):
+        paras = [s.strip() for s in text.split("\n\n") if len(s.strip()) > 0]
+        setenses = []
+        for para in paras:
+            setenses.append([s.strip() for s in para.split("\n") if len(s.strip()) > 0])
 
-    def add_translator(self, translator):
-        self.translators.append(translator)
+        return paras, setenses
 
-    def phrase_translate(self, phrase: str):
-        for translator in self.translators:
-            ok, res = translator(phrase)
+    def __init__(self, vanilla) -> None:
+        self.vanilla_translator = vanilla
+        self.extra_translators = []
+
+    def add_extra_translator(self, translator):
+        self.extra_translators.append(translator)
+
+    """
+    将法环的文本分为3个level:
+    - text: 一个ID表示的全部文本
+    - paragraph： text通过双换行拆分的句子序列
+    - sentence: 由paragrapth通过单换行拆分的多个句子
+
+    翻译的基本流程：
+    1. 首先将text拆分为多个paragraph
+    2. 对于每个paragaph，如果能调用原版翻译，就直接翻译，处理结束，如果不能，则拆分成句子做单个翻译
+    3. 单个翻译还不行就调用其他翻译工具翻译
+    """
+
+    def translate_sentence(self, sentence: str):
+        for translator in self.extra_translators:
+            ok, res = translator(sentence)
             if ok:
                 return res
+        logging.error("Can not translate: %s", sentence)
+        return sentence
 
-        logging.error("Can not translate: %s", phrase)
-        return phrase
+    def translate(self, text: str):
+        result = []
+        paragraphs, setenses = TranslatorGroup.parse_text(text)
+        for i in range(len(paragraphs)):
+            ok, res = self.vanilla_translator(paragraphs[i])
+            if ok:
+                result.append(res)
+            else:
+                # 尝试短句翻译
+                sentence_result = []
+                for sentence in setenses[i]:
+                    ok, res = self.vanilla_translator(sentence)
+                    if not ok:
+                        res = self.translate_sentence(sentence)
+                    sentence_result.append(res)
+                result.append("\n".join(sentence_result))
 
-    def translate(self, s: str) -> str:
-        if s.strip() == "_":
-            return "_"
-        seqs = [i.strip() for i in s.split("\n\n") if len(i.strip()) > 0]
-        res = ""
-        for s in seqs:
-            res += self.phrase_translate(s) + "\n\n"
-        return res.strip()
+        return "\n\n".join(result)
 
 
 def tralslate_file(file_name: str, output_name: str, ts: TranslatorGroup):
@@ -401,12 +430,13 @@ def create_empty_translate(mod_root_path: str):
 def buildTranslateGroup(
     glossaries: List[str], key_file: str, value_file: str, mode: str
 ):
-    group = TranslatorGroup()
-    group.add_translator(IngoreErrorTranslator())
-    group.add_translator(VanillaTranslator())
+    group = TranslatorGroup(vanilla=VanillaTranslator())
+    group.add_extra_translator(IngoreErrorTranslator())
+    # 查询两边
+    group.add_extra_translator(VanillaTranslator())
 
     gls = [Glossary(i) for i in glossaries]
-    group.add_translator(MachineTranslator(key_file, value_file, gls, mode))
+    group.add_extra_translator(MachineTranslator(key_file, value_file, gls, mode))
     return group
 
 
@@ -424,7 +454,6 @@ def translateMod(mod_root_path, group: TranslatorGroup, mode: str):
             CONFIG.inter_root,
             "zhoCN",
         )
-        print(fmg_files_path)
         # 复制文件到英文目录
         for f in os.listdir(fmg_files_path):
             if f.endswith(".fmg"):
@@ -432,7 +461,7 @@ def translateMod(mod_root_path, group: TranslatorGroup, mode: str):
                 logging.info("Copy %s -> %s", os.path.join(fmg_files_path, f), dst)
                 shutil.copy(os.path.join(fmg_files_path, f), dst)
                 if not yabber(dst):
-                    logging.error("Invalid fmg fles: %s", dst)
+                    logging.error("Invalid fmg files: %s", dst)
                     return False
                 os.remove(dst)
 
@@ -498,15 +527,10 @@ class TranslateGUI(QWidget):
         self.selectModPathButton = QPushButton("选择MOD路径")
         self.addGlossaryButton = QPushButton("添加术语表")
         self.removeGlossaryButton = QPushButton("删除选中的术语表")
-
         self.createEmptyFileButton = QPushButton("生成空翻译文件")
-
         self.exportButton = QPushButton("导出未翻译语句")
-
         self.translateButton = QPushButton("生成汉化文件")
-
         self.glossaryListView = QListWidget()
-
         # self.logWindow = QTextBrowser()
         # self.logWindow.setCurrentFont(QFont("微软雅黑", 8))
 
@@ -528,13 +552,11 @@ class TranslateGUI(QWidget):
     def center(self):
         qr = self.frameGeometry()
         cp = self.screen().availableGeometry().center()
-
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
     def initUI(self):
         logging.debug("Init GUI")
-
         grid = QGridLayout()
         grid.setSpacing(10)
         grid.addWidget(self.modPathEdit, 0, 0, 1, 6)
@@ -543,13 +565,11 @@ class TranslateGUI(QWidget):
         grid.addWidget(QLabel("术语表"), 1, 0, 1, 2)
         grid.addWidget(self.addGlossaryButton, 1, 2, 1, 3)
         grid.addWidget(self.removeGlossaryButton, 1, 5, 1, 3)
-
         grid.addWidget(self.glossaryListView, 2, 0, 3, 8)
         grid.addWidget(self.exportButton, 5, 0, 1, 5)
         grid.addWidget(self.translateButton, 5, 5, 1, 3)
-        # grid.addWidget(self.logWindow, 6, 0, 1, 8)
         self.setLayout(grid)
-        self.setWindowTitle("艾尔登法环MOD翻译器 v0.1")
+        self.setWindowTitle("艾尔登法环MOD翻译器 " + VERSION)
         self.resize(800, 500)
         self.center()
         self.show()
@@ -596,6 +616,10 @@ class TranslateGUI(QWidget):
         else:
             os.startfile(f)
 
+    """
+    读取列表信心，按照优先级返回文件名列表
+    """
+
     def getGlossairs(self):
         return [
             self.glossaryListView.item(i).text()
@@ -621,7 +645,7 @@ class TranslateGUI(QWidget):
 
         key_file, _ = QFileDialog.getSaveFileName(
             caption="保存翻译文件",
-            directory=os.path.join(self.modPathEdit.text(), "msg/zhocn/key.txt"),
+            directory=os.path.join(os.getcwd(), "key.txt"),
         )
 
         if len(key_file.strip()) == 0:
