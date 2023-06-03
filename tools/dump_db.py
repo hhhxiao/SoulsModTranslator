@@ -75,8 +75,8 @@ def create_db(root: str, msg_type: str, output: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("use python db_creator [root_folder]")
+    if len(sys.argv) != 3:
+        print("use python db_creator [root_folder] [output]")
         exit()
-    create_db(sys.argv[1], "menu", "db")
-    create_db(sys.argv[1], "item", "db")
+    create_db(sys.argv[1], "menu", sys.argv[2])
+    create_db(sys.argv[1], "item", sys.argv[2])
