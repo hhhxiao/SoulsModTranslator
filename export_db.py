@@ -22,23 +22,17 @@ def split_msg(english: str, chinese: str):
     es = [s.strip() for s in english.split("\n\n") if len(s.strip()) > 0]
     cs = [s.strip() for s in chinese.split("\n\n") if len(s.strip()) > 0]
     if len(es) != len(cs):
-        print(" --------------- ")
-        print("文本段数不一致:")
-        print("英文: ")
-        print(english)
-        print("中文")
-        print(chinese)
-        return {english: chinese}
+        return {english.strip("!.,?").lower(): chinese.strip("！.。，·？…")}
 
     m = {}
     for i in range(len(es)):
         chi = [s.strip() for s in cs[i].split("\n") if len(s.strip()) > 0]
         esi = [s.strip() for s in es[i].split("\n") if len(s.strip()) > 0]
         if len(chi) != len(esi):
-            m[es[i].strip("!.,?")] = cs[i].strip("！.。，·？…")
+            m[es[i].strip("!.,?").lower()] = cs[i].strip("！.。，·？…")
         else:
             for j in range(len(chi)):
-                m[esi[j].strip("!.,?")] = chi[j].strip("！.。，·？…")
+                m[esi[j].strip("!.,?").lower()] = chi[j].strip("！.。，·？…")
     return m
 
 

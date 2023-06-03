@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 
 SPLITOR = "------"
-VERSION = "v0.25"
+VERSION = "v2.6"
 
 # ------------------------------- TOOLS ---------------------------
 
@@ -214,7 +214,6 @@ class MachineTranslator:
             return True, s
         elif self.mode == "load":
             if s in self.machin_table:
-                # logging.debug("Translate: <%s> -> <%s>", s, self.machin_table[s])
                 return True, self.machin_table[s]
             else:
                 return False, s
@@ -229,6 +228,16 @@ class IngoreErrorTranslator:
             return True, s
         else:
             return False, s
+
+
+class AsciiTranslator:
+    def __init__(self) -> None:
+        pass
+
+    def __call__(self, s: str):
+        if not s.isascii():
+            return True, s
+        return False, s
 
 
 """
@@ -266,7 +275,7 @@ class VanillaTranslator:
                 )
 
     def __call__(self, s: str):
-        x = s.strip("!.,?")
+        x = s.strip("!.,?").lower()
         # 两个数据库有重的数据，下面的顺序最好不要换
         if x in self.menu_db:
             return True, s.replace(x, self.menu_db[x])
@@ -312,6 +321,10 @@ class TranslatorGroup:
         return sentence
 
     def translate(self, text: str):
+        ok, res = self.vanilla_translator(text)
+        if ok:
+            return res
+        #
         result = []
         paragraphs, setenses = TranslatorGroup.parse_text(text)
         for i in range(len(paragraphs)):
@@ -433,6 +446,7 @@ def buildTranslateGroup(
     group = TranslatorGroup(vanilla=VanillaTranslator())
     group.add_extra_translator(IngoreErrorTranslator())
     # 查询两边
+    group.add_extra_translator(AsciiTranslator())
     group.add_extra_translator(VanillaTranslator())
 
     gls = [Glossary(i) for i in glossaries]
