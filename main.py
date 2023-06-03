@@ -601,7 +601,7 @@ class TranslateGUI(QWidget):
         file, x = QFileDialog.getOpenFileName(
             self,
             caption="选择术语表文件",
-            directory="./data/glossaries/",
+            directory="./glossaries/",
             filter="JSON files (*.json)",
         )
         items = [

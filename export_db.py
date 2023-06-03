@@ -48,6 +48,8 @@ def create_db(root: str, msg_type: str, output: str):
 
     db = {}
     for file in eng_files:
+        partial_db = {}
+
         if file not in zh_files:
             print("在中文文本中找不到英文文本 {}".format(file))
         # 读取数库
@@ -61,10 +63,14 @@ def create_db(root: str, msg_type: str, output: str):
                     slice = split_msg(english, chinese)
                     for e, z in slice.items():
                         db[e] = z
+                        partial_db[e] = z
+
                 else:
                     print("文件{}中文本id为{}的文本发生缺失")
+        with open(output + "/partial/" + file + ".json", "w", encoding="utf-8") as f:
+            json.dump(db, f, ensure_ascii=False, indent=2)
 
-    with open(output + "/" + msg_type + ".json", "w", encoding="utf-8") as f:
+    with open(output + "/global/" + msg_type + ".json", "w", encoding="utf-8") as f:
         json.dump(db, f, ensure_ascii=False, indent=2)
 
 
@@ -72,5 +78,5 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("use python db_creator [root_folder]")
         exit()
-    create_db(sys.argv[1], "menu", "data")
-    create_db(sys.argv[1], "item", "data")
+    create_db(sys.argv[1], "menu", "db")
+    create_db(sys.argv[1], "item", "db")

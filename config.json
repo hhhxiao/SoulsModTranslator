@@ -1,7 +1,7 @@
 {
     "inter_root": "GR\\data\\INTERROOT_win64\\msg",
     "source_lang": "engUS",
-    "vanilla_db_path": ".\\data\\",
+    "vanilla_db_path": ".\\db\\global\\",
     "export_as_docx": false,
     "tmp_path": ".tmp",
     "yabber_bin": ".\\Yabber131\\"
