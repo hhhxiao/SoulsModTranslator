@@ -276,9 +276,12 @@ class VanillaTranslator:
         x = s.strip("!.,?").lower()
         # 两个数据库有重的数据，下面的顺序最好不要换
         if x in self.menu_db:
-            return True, s.replace(x, self.menu_db[x])
+            r = s.lower().replace(x, self.menu_db[x])
+            print(s, " -> ", r)
+            return True, r
+            # return True, s.replace(x, self.menu_db[x])
         if x in self.item_db:
-            return True, s.replace(x, self.item_db[x])
+            return True, s.lower().replace(x, self.item_db[x])
         return False, s
 
 
@@ -355,7 +358,10 @@ def tralslate_file(file_name: str, output_name: str, ts: TranslatorGroup):
         if english is None:
             trans_kv[id] = english
         else:
-            trans_kv[id] = ts.translate(english)
+            chs = ts.translate(english)
+            # logging.debug("%s -> %s", english, chs)
+            trans_kv[id] = chs
+
     for t in entries:
         t.text = trans_kv.get(int(t.get("id")))
     tree.write(output_name, encoding="utf-8")
