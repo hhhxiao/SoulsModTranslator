@@ -18,8 +18,9 @@ def read_data():
 if __name__ == "__main__":
     data = read_data()
 
-    weapon_glossay = {"phases": {}}
+    weapon_glossay = {"phases": {}, "words": {}}
 
+    kvs = []
     start = False
     for k, v in data.items():
         k = str(k)
@@ -35,6 +36,11 @@ if __name__ == "__main__":
                     con = True
                     break
             if not con:  # 排除质变武器
-                weapon_glossay["phases"][k] = v
+                kvs.append([k, v])
+                # weapon_glossay["phases"][k] = v
+        kvs.sort(key=lambda x: (len(x[0])))
+    for i in range(len(kvs)):
+        weapon_glossay["phases"][kvs[len(kvs) - i - 1][0]] = kvs[len(kvs) - i - 1][1]
+
     with open("vanilla_weapn.json", "w", encoding="utf-8") as f:
         json.dump(weapon_glossay, f, ensure_ascii=False, indent=2)

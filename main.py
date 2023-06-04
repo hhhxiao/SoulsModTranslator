@@ -129,27 +129,23 @@ class Glossary:
             data = {}
 
             with open(name, "r", encoding="utf-8") as f:
+                logging.info("Add glossary %s", name)
                 data = json.load(f)
             # 不判空就是为了报错
             words = data["words"]
             for w, v in words.items():
-                self.word_table[w] = v
-                self.word_table[w.capitalize()] = v
-                self.word_table[w.upper()] = v
+                self.word_table[w.lower()] = v
 
             phases = data["phases"]
 
             for p, v in phases.items():
-                self.phase_table[p] = v
                 self.phase_table[p.lower()] = v
-                self.phase_table[p.capitalize()] = v
-                self.phase_table[p.upper()] = v
         except:
             logging.error("Can not open glossary %s", name)
 
     def lookup_phase_table(self, s: str):
         for k, v in self.phase_table.items():
-            s = s.replace(k, v)
+            s = s.lower().replace(k, v)
         return s
 
     def try_replace(self, match):
@@ -273,6 +269,8 @@ class VanillaTranslator:
                     self.menu_db[k],
                     self.item_db[k],
                 )
+
+    # 分成两种替换模式：
 
     def __call__(self, s: str):
         x = s.strip("!.,?").lower()
@@ -445,7 +443,6 @@ def buildTranslateGroup(
 ):
     group = TranslatorGroup(vanilla=VanillaTranslator())
     group.add_extra_translator(IngoreErrorTranslator())
-    # 查询两边
     group.add_extra_translator(AsciiTranslator())
     group.add_extra_translator(VanillaTranslator())
 
