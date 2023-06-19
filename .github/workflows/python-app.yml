@@ -23,8 +23,9 @@ jobs:
         run: |
           mkdir out
           cp ./dist/main.exe ./out/
-          cp -r ./data ./out/
-          cp -r ./Yabber131/ ./out/ 
+          cp -r ./db ./out/
+          cp -r ./Yabber131/ ./out/
+          cp -r ./glossaries/ ./out/
           cp ./README.txt ./out/
           cp ./config.json ./out/
           cp ./更新日志.txt ./out/
