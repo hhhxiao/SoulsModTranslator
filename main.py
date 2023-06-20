@@ -277,7 +277,6 @@ class VanillaTranslator:
         # 两个数据库有重的数据，下面的顺序最好不要换
         if x in self.menu_db:
             r = s.lower().replace(x, self.menu_db[x])
-            print(s, " -> ", r)
             return True, r
             # return True, s.replace(x, self.menu_db[x])
         if x in self.item_db:

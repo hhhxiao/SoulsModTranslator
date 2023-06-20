@@ -1,0 +1,37 @@
+{
+    "words": {
+        "arcane": "奥术",
+        "Hemwick": "海姆维克",
+        "gascoigne": "加斯科因",
+        "amelia": "阿梅利亚",
+        "paarl": "帕阿尔",
+        "amygdala": "阿米戈达拉",
+        "logarius": "洛加留斯",
+        "yharnam": "亚楠",
+        "yharnamites": "亚楠人",
+        "yharnamr": "亚楠",
+        "yharnamer": "亚楠",
+        "rom": "罗姆",
+        "micolash": "米克拉什",
+        "mergo": "墨戈",
+        "ebrietas": "埃波利耶塔",
+        "gehrman": "格曼",
+        "ludwig ": "路德维格",
+        "maria": "玛利亚",
+        "laurence": "劳伦斯",
+        "choir": "圣诗班",
+        "vilebloods": "污秽之血族",
+        "annalise": "安娜丽瑟"
+    },
+    "phashes": {
+        "healing church": "治愈教会",
+        "blood echoes": "血之回响",
+        "moon presence": "科斯孤儿",
+        "orphan of kos": "科斯孤儿",
+        "royal guards": "皇家卫兵",
+        "oto workshop": "沃德工厂",
+        "child of blood": "血之子",
+        "master willem": "威廉大师",
+        "school of mensis": "血之学会"
+    }
+}
