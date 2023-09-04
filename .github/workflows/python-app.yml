@@ -16,7 +16,7 @@ jobs:
 
       - name: Pyninstaller
         run: |
-          pyinstaller --onefile --noconsole main.py
+          pyinstaller --onefile --windowed --icon=app.ico main.py
 
       - name: Create Artifact
         id: vars2
