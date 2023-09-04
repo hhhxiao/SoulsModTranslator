@@ -13,7 +13,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install PyQt6
-          pip install qdarktheme
+          pip install pyqtdarktheme
 
       - name: Pyninstaller
         run: |
