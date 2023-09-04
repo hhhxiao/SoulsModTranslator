@@ -5,6 +5,7 @@ from typing import Any
 import xml.etree.ElementTree as ET
 import re
 from typing import List
+import qdarktheme
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -17,7 +18,7 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
 )
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 
 SPLITOR = "------"
 VERSION = "v2.6"
@@ -105,6 +106,7 @@ def yabber(path: str):
         [os.path.join(CONFIG.yabber_bin, "Yabber.exe"), path],
         capture_output=True,
         text=True,
+        shell=True
     )
 
     info = result.stdout
@@ -232,7 +234,7 @@ class AsciiTranslator:
         pass
 
     def __call__(self, s: str):
-        return [s.isascii(), s]
+        return [not s.isascii(), s]
 
 
 """
@@ -568,6 +570,7 @@ class TranslateGUI(QWidget):
         self.move(qr.topLeft())
 
     def init_ui(self):
+        self.setWindowIcon(QIcon("app.ico"))
         logging.debug("Init GUI")
         grid = QGridLayout()
         grid.setSpacing(6)
@@ -706,6 +709,8 @@ def main():
     CONFIG.load_config("config.json")
 
     app = QApplication(sys.argv)
+    qdarktheme.setup_theme("light")
+
     ex = TranslateGUI()
     sys.exit(app.exec())
 

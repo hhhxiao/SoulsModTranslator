@@ -13,10 +13,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install PyQt6
+          pip install qdarktheme
 
       - name: Pyninstaller
         run: |
-          pyinstaller --onefile --windowed --icon=app.ico main.py
+          pyinstaller -w -F -i "app.ico" main.py
 
       - name: Create Artifact
         id: vars2
@@ -29,7 +30,7 @@ jobs:
           cp ./README.txt ./out/
           cp ./config.json ./out/
           cp ./更新日志.txt ./out/
-          cp ./点我运行.bat ./outs
+          cp ./app.ico ./outs/
         shell: bash
 
       - name: Upload Actions File
