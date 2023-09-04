@@ -7,17 +7,17 @@ jobs:
 
       - name: checkout code
         uses: actions/checkout@v3
-        
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install PyQt6
-      
+
       - name: Pyninstaller
         run: |
-          pyinstaller --onefile main.py
-      
+          pyinstaller --onefile --noconsole main.py
+
       - name: Create Artifact
         id: vars2
         run: |
@@ -31,7 +31,7 @@ jobs:
           cp ./更新日志.txt ./out/
           cp ./点我运行.bat ./outs
         shell: bash
-      
+
       - name: Upload Actions File
         uses: actions/upload-artifact@v1.0.0
         with:

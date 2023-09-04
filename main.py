@@ -22,6 +22,7 @@ from PyQt6.QtGui import QFont
 SPLITOR = "------"
 VERSION = "v2.6"
 
+
 # ------------------------------- TOOLS ---------------------------
 
 
@@ -70,7 +71,7 @@ class GlobalConfig:
         self.yabber_bin = ".\\Yabber131\\"
         self.vanilla_db_path = ".\\data\\"
 
-    def loadConfig(self, path: str):
+    def load_config(self, path: str):
         try:
             data = {}
             with open(path, "r") as f:
@@ -84,10 +85,10 @@ class GlobalConfig:
             self.vanilla_db_path = str(data["vanilla_db_path"])
             logging.info("config:")
             logging.info(" - Inter root: %s", self.inter_root)
-            logging.info(" - Soruce lang: %s", self.source_lang)
+            logging.info(" - Source lang: %s", self.source_lang)
             logging.info(" - Temp path: %s", self.tmp_path)
             logging.info(" - Yabber path: %s", self.yabber_bin)
-            logging.info(" - Vanialla DB path: %s", self.vanilla_db_path)
+            logging.info(" - Vanilla DB path: %s", self.vanilla_db_path)
 
             return True
         except:
@@ -162,13 +163,14 @@ class Glossary:
 
 
 class MachineTranslator:
-    def get_variant(s: str):
-        if s.isupper():
-            return [s]
-        return [s, s.capitalize(), s.upper()]
+
+    # def get_variant(s: str):
+    #     if s.isupper():
+    #         return [s]
+    #     return [s, s.capitalize(), s.upper()]
 
     def __init__(
-        self, key_path: str, value_path: str, glossaries: List[Glossary], mode: str
+            self, key_path: str, value_path: str, glossaries: List[Glossary], mode: str
     ) -> None:
         self.mode = mode
         self.key_file = None
@@ -197,9 +199,6 @@ class MachineTranslator:
     def add_glossary(self, g: Glossary):
         self.add_glossary(g)
 
-    # def __del__(self):
-    #     pass
-
     def __call__(self, s: str):
         s = s.strip()
         for glossary in self.glossaries:
@@ -215,15 +214,17 @@ class MachineTranslator:
                 return False, s
 
 
-class IngoreErrorTranslator:
+class IgnoreErrorTranslator:
     def __init__(self) -> None:
         self.black_list = ["%null%", "[ERROR]"]
 
     def __call__(self, s: str):
-        if s in self.black_list:
-            return True, s
-        else:
-            return False, s
+        return [s in self.black_list, s]
+
+
+"""
+忽略部分非ascii字符
+"""
 
 
 class AsciiTranslator:
@@ -231,9 +232,7 @@ class AsciiTranslator:
         pass
 
     def __call__(self, s: str):
-        if not s.isascii():
-            return True, s
-        return False, s
+        return [s.isascii(), s]
 
 
 """
@@ -251,19 +250,19 @@ class VanillaTranslator:
 
     def load_db(self):
         with open(
-            os.path.join(CONFIG.vanilla_db_path, "item.json"), encoding="utf-8"
+                os.path.join(CONFIG.vanilla_db_path, "item.json"), encoding="utf-8"
         ) as item:
             self.item_db = json.load(item)
             item.close()
         with open(
-            os.path.join(CONFIG.vanilla_db_path, "menu.json"), encoding="utf-8"
+                os.path.join(CONFIG.vanilla_db_path, "menu.json"), encoding="utf-8"
         ) as menu:
             self.menu_db = json.load(menu)
             menu.close()
 
         for k in self.menu_db.items():
             if k in self.item_db:
-                logging.warn(
+                logging.warning(
                     "Find duplicated key in vanilla DB",
                     k,
                     self.menu_db[k],
@@ -285,13 +284,13 @@ class VanillaTranslator:
 
 
 class TranslatorGroup:
-    def parse_text(text: str):
+    @classmethod
+    def parse_text(cls, text: str):
         paras = [s.strip() for s in text.split("\n\n") if len(s.strip()) > 0]
-        setenses = []
+        sentences = []
         for para in paras:
-            setenses.append([s.strip() for s in para.split("\n") if len(s.strip()) > 0])
-
-        return paras, setenses
+            sentences.append([s.strip() for s in para.split("\n") if len(s.strip()) > 0])
+        return paras, sentences
 
     def __init__(self, vanilla) -> None:
         self.vanilla_translator = vanilla
@@ -304,11 +303,11 @@ class TranslatorGroup:
     将法环的文本分为3个level:
     - text: 一个ID表示的全部文本
     - paragraph： text通过双换行拆分的句子序列
-    - sentence: 由paragrapth通过单换行拆分的多个句子
+    - sentence: 由paragraph通过单换行拆分的多个句子
 
     翻译的基本流程：
     1. 首先将text拆分为多个paragraph
-    2. 对于每个paragaph，如果能调用原版翻译，就直接翻译，处理结束，如果不能，则拆分成句子做单个翻译
+    2. 对于每个paragraph，如果能调用原版翻译，就直接翻译，处理结束，如果不能，则拆分成句子做单个翻译
     3. 单个翻译还不行就调用其他翻译工具翻译
     """
 
@@ -326,7 +325,7 @@ class TranslatorGroup:
             return res
         #
         result = []
-        paragraphs, setenses = TranslatorGroup.parse_text(text)
+        paragraphs, sentences = TranslatorGroup.parse_text(text)
         for i in range(len(paragraphs)):
             ok, res = self.vanilla_translator(paragraphs[i])
             if ok:
@@ -334,7 +333,7 @@ class TranslatorGroup:
             else:
                 # 尝试短句翻译
                 sentence_result = []
-                for sentence in setenses[i]:
+                for sentence in sentences[i]:
                     ok, res = self.vanilla_translator(sentence)
                     if not ok:
                         res = self.translate_sentence(sentence)
@@ -344,7 +343,7 @@ class TranslatorGroup:
         return "\n\n".join(result)
 
 
-def tralslate_file(file_name: str, output_name: str, ts: TranslatorGroup):
+def translate_file(file_name: str, output_name: str, ts: TranslatorGroup):
     kv = {}
     tree = ET.parse(file_name)
     root = tree.getroot()
@@ -353,13 +352,12 @@ def tralslate_file(file_name: str, output_name: str, ts: TranslatorGroup):
         kv[int(t.get("id"))] = t.text
 
     trans_kv = {}
-    for id, english in kv.items():
+    for text_id, english in kv.items():
         if english is None:
-            trans_kv[id] = english
+            trans_kv[text_id] = english
         else:
             chs = ts.translate(english)
-            # logging.debug("%s -> %s", english, chs)
-            trans_kv[id] = chs
+            trans_kv[text_id] = chs
 
     for t in entries:
         t.text = trans_kv.get(int(t.get("id")))
@@ -427,9 +425,9 @@ def create_empty_translate(mod_root_path: str):
                 content = f.read()
             f.close()
 
-            new_contnet = content.replace(CONFIG.source_lang, "zhoCN")
+            new_content = content.replace(CONFIG.source_lang, "zhoCN")
             with open(yabber_metadata, "w", encoding="utf-8") as f:
-                f.write(new_contnet)
+                f.write(new_content)
         except:
             logging.info("ReWrite %s Failure!", yabber_metadata)
             return False
@@ -443,11 +441,11 @@ def create_empty_translate(mod_root_path: str):
     return True
 
 
-def buildTranslateGroup(
-    glossaries: List[str], key_file: str, value_file: str, mode: str
+def build_translate_group(
+        glossaries: List[str], key_file: str, value_file: str, mode: str
 ):
     group = TranslatorGroup(vanilla=VanillaTranslator())
-    group.add_extra_translator(IngoreErrorTranslator())
+    group.add_extra_translator(IgnoreErrorTranslator())
     group.add_extra_translator(AsciiTranslator())
     group.add_extra_translator(VanillaTranslator())
 
@@ -456,7 +454,7 @@ def buildTranslateGroup(
     return group
 
 
-def translateMod(mod_root_path, group: TranslatorGroup, mode: str):
+def translate_mod(mod_root_path, group: TranslatorGroup, mode: str):
     logging.info("Create temp dir")
     tmp_path = os.path.join(mod_root_path, "msg", CONFIG.tmp_path)
     if os.path.exists(tmp_path):
@@ -491,11 +489,11 @@ def translateMod(mod_root_path, group: TranslatorGroup, mode: str):
         for f in os.listdir(xml_path):
             if f.endswith(".fmg.xml"):
                 logging.info("Translate %s", f)
-                tralslate_file(
+                translate_file(
                     os.path.join(xml_path, f), os.path.join(trans_path, f), group
                 )
     if mode == "save":
-        logging.info("No need to reapck")
+        logging.info("No need to repack")
         return True
     # 打包并移动到对应位置
     for t in ["item", "menu"]:
@@ -504,7 +502,7 @@ def translateMod(mod_root_path, group: TranslatorGroup, mode: str):
             if file.endswith(".fmg.xml"):
                 full_file_path = os.path.join(trans_path, file)
                 if not yabber(full_file_path):
-                    logging.info("Repack %s Faiure", full_file_path)
+                    logging.info("Repack %s Failure", full_file_path)
                     return False
                 logging.info("Repack %s", full_file_path)
                 full_fmg_path = full_file_path.replace(".xml", "")
@@ -533,7 +531,7 @@ def translateMod(mod_root_path, group: TranslatorGroup, mode: str):
 
 
 class TranslateGUI(QWidget):
-    def MSG(self, s: str):
+    def msg(self, s: str):
         QMessageBox.information(self, "提醒", s)
 
     def __init__(self):
@@ -547,18 +545,16 @@ class TranslateGUI(QWidget):
         self.exportButton = QPushButton("导出未翻译语句")
         self.translateButton = QPushButton("生成汉化文件")
         self.glossaryListView = QListWidget()
-        # self.logWindow = QTextBrowser()
-        # self.logWindow.setCurrentFont(QFont("微软雅黑", 8))
 
-        self.initUI()
+        self.init_ui()
         # Event Binding
-        self.selectModPathButton.clicked.connect(self.selectModPathEvent)
-        self.addGlossaryButton.clicked.connect(self.addGlossaryEvent)
-        self.removeGlossaryButton.clicked.connect(self.removeGlossaryEvent)
-        self.glossaryListView.itemDoubleClicked.connect(self.displayItem)
-        self.createEmptyFileButton.clicked.connect(self.createEmpty)
-        self.exportButton.clicked.connect(self.exportEvent)
-        self.translateButton.clicked.connect(self.translateEvent)
+        self.selectModPathButton.clicked.connect(self.select_mod_path_event)
+        self.addGlossaryButton.clicked.connect(self.add_glossary_event)
+        self.removeGlossaryButton.clicked.connect(self.remove_glossary_event)
+        self.glossaryListView.itemDoubleClicked.connect(self.display_item)
+        self.createEmptyFileButton.clicked.connect(self.create_empty_translate_file)
+        self.exportButton.clicked.connect(self.export_event)
+        self.translateButton.clicked.connect(self.translate_event)
         # Status
         self.modPathEdit.setEnabled(False)
         self.exportButton.setEnabled(False)
@@ -571,10 +567,10 @@ class TranslateGUI(QWidget):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def initUI(self):
+    def init_ui(self):
         logging.debug("Init GUI")
         grid = QGridLayout()
-        grid.setSpacing(10)
+        grid.setSpacing(6)
         grid.addWidget(self.modPathEdit, 0, 0, 1, 6)
         grid.addWidget(self.selectModPathButton, 0, 6, 1, 1)
         grid.addWidget(self.createEmptyFileButton, 0, 7, 1, 1)
@@ -586,12 +582,12 @@ class TranslateGUI(QWidget):
         grid.addWidget(self.translateButton, 5, 5, 1, 3)
         self.setLayout(grid)
         self.setWindowTitle("艾尔登法环MOD翻译器 " + VERSION)
-        self.resize(800, 500)
+        self.resize(400, 500)
         self.center()
         self.show()
 
     # Event
-    def selectModPathEvent(self):
+    def select_mod_path_event(self):
         path = QFileDialog.getExistingDirectory(self, caption="选择MOD根目录")
         if len(path.strip()) > 0:
             self.exportButton.setEnabled(True)
@@ -599,7 +595,7 @@ class TranslateGUI(QWidget):
             self.createEmptyFileButton.setEnabled(True)
             self.modPathEdit.setText(path)
 
-    def addGlossaryEvent(self):
+    def add_glossary_event(self):
         file, x = QFileDialog.getOpenFileName(
             self,
             caption="选择术语表文件",
@@ -617,46 +613,46 @@ class TranslateGUI(QWidget):
         if file not in items:
             self.glossaryListView.addItem(file)
         else:
-            self.MSG("该术语表已存在")
+            self.msg("该术语表已存在")
 
-    def removeGlossaryEvent(self):
+    def remove_glossary_event(self):
         row = self.glossaryListView.currentRow()
         if row >= 0:
             current_item = self.glossaryListView.takeItem(row)
             del current_item
 
-    def displayItem(self):
+    def display_item(self):
         f = self.glossaryListView.currentItem().text()
         if not os.path.exists(f):
-            self.MSG("文件不存在")
+            self.msg("文件不存在")
         else:
             os.startfile(f)
 
     """
-    读取列表信心，按照优先级返回文件名列表
+    读取列表信息，按照优先级返回文件名列表
     """
 
-    def getGlossairs(self):
+    def get_glossaries(self):
         return [
             self.glossaryListView.item(i).text()
             for i in range(self.glossaryListView.count())
         ]
 
-    def createEmpty(self):
+    def create_empty_translate_file(self):
         mod_path = self.modPathEdit.text()
         if not os.path.exists(mod_path):
-            self.MSG("MOD目录不存在")
+            self.msg("MOD目录不存在")
             return
 
         if not create_empty_translate(self.modPathEdit.text()):
-            self.MSG("创建空翻译文件失败，详细原因请查询日志")
+            self.msg("创建空翻译文件失败，详细原因请查询日志")
         else:
-            self.MSG("创建空翻译: " + os.path.join(mod_path, "msg/zhocn") + "成功,之后无需再创建")
+            self.msg("创建空翻译: " + os.path.join(mod_path, "msg/zhocn") + "成功,之后无需再创建")
 
-    def exportEvent(self):
+    def export_event(self):
         mod_path = self.modPathEdit.text()
         if not os.path.exists(mod_path):
-            self.MSG("MOD目录不存在")
+            self.msg("MOD目录不存在")
             return
 
         key_file, _ = QFileDialog.getSaveFileName(
@@ -669,16 +665,16 @@ class TranslateGUI(QWidget):
 
         logging.info("save key files to %s", key_file)
 
-        g = buildTranslateGroup(self.getGlossairs(), key_file, "wont_use", "save")
-        if not translateMod(mod_path, g, "save"):
-            self.MSG("导出未翻译语句失败，详细原因请查询日志")
+        g = build_translate_group(self.get_glossaries(), key_file, "wont_use", "save")
+        if not translate_mod(mod_path, g, "save"):
+            self.msg("导出未翻译语句失败，详细原因请查询日志")
         else:
-            self.MSG("导出未翻译文件: " + key_file + "成功")
+            self.msg("导出未翻译文件: " + key_file + "成功")
 
-    def translateEvent(self):
+    def translate_event(self):
         mod_path = self.modPathEdit.text()
         if not os.path.exists(mod_path):
-            self.MSG("MOD目录不存在")
+            self.msg("MOD目录不存在")
             return
 
         key_file, _ = QFileDialog.getOpenFileName(
@@ -697,22 +693,20 @@ class TranslateGUI(QWidget):
         logging.info("Key file is %s", key_file)
         logging.info("Value file is %s", value_file)
 
-        g = buildTranslateGroup(self.getGlossairs(), key_file, value_file, "load")
-        if translateMod(mod_path, g, "load"):
-            self.MSG("翻译成功，请打开游戏进行验证")
+        g = build_translate_group(self.get_glossaries(), key_file, value_file, "load")
+        if translate_mod(mod_path, g, "load"):
+            self.msg("翻译成功，请打开游戏进行验证")
         else:
-            self.MSG("翻译失败")
+            self.msg("翻译失败")
 
 
 def main():
     init_logger()
 
-    CONFIG.loadConfig("config.json")
+    CONFIG.load_config("config.json")
 
     app = QApplication(sys.argv)
-    app.setFont(QFont("微软雅黑", 14))
     ex = TranslateGUI()
-
     sys.exit(app.exec())
 
 
