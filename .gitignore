@@ -8,3 +8,4 @@ dist
 unpacked_vanilla
 *.spec
 .idea/*
+__pycache__/*

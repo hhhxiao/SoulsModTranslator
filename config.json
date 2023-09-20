@@ -1,8 +1,17 @@
 {
-    "inter_root": "GR\\data\\INTERROOT_win64\\msg",
     "source_lang": "engUS",
-    "vanilla_db_path": ".\\db\\global\\",
     "export_as_docx": false,
     "tmp_path": ".tmp",
-    "yabber_bin": ".\\Yabber131\\"
+    "yabber_bin": ".\\Yabber131\\",
+    "Game": "ER",
+    "ER": {
+        "name": "艾尔登法环(本体)",
+        "inter_root": "GR\\data\\INTERROOT_win64\\msg",
+        "vanilla_db_path": ".\\db\\ER"
+    },
+    "DS3": {
+        "name": "黑暗之魂3(DLC2)",
+        "inter_root": "",
+        "vanilla_db_path": ".\\db\\DS3"
+    }
 }
