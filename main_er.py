@@ -75,7 +75,7 @@ class GlobalConfig:
     def load_config(self, path: str):
         try:
             data = {}
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
 
             self.inter_root = str(data["inter_root"])
@@ -106,7 +106,7 @@ def yabber(path: str):
         [os.path.join(CONFIG.yabber_bin, "Yabber.exe"), path],
         capture_output=True,
         text=True,
-        shell=True
+        shell=True,
     )
 
     info = result.stdout
@@ -165,14 +165,13 @@ class Glossary:
 
 
 class MachineTranslator:
-
     # def get_variant(s: str):
     #     if s.isupper():
     #         return [s]
     #     return [s, s.capitalize(), s.upper()]
 
     def __init__(
-            self, key_path: str, value_path: str, glossaries: List[Glossary], mode: str
+        self, key_path: str, value_path: str, glossaries: List[Glossary], mode: str
     ) -> None:
         self.mode = mode
         self.key_file = None
@@ -252,12 +251,12 @@ class VanillaTranslator:
 
     def load_db(self):
         with open(
-                os.path.join(CONFIG.vanilla_db_path, "item.json"), encoding="utf-8"
+            os.path.join(CONFIG.vanilla_db_path, "item.json"), encoding="utf-8"
         ) as item:
             self.item_db = json.load(item)
             item.close()
         with open(
-                os.path.join(CONFIG.vanilla_db_path, "menu.json"), encoding="utf-8"
+            os.path.join(CONFIG.vanilla_db_path, "menu.json"), encoding="utf-8"
         ) as menu:
             self.menu_db = json.load(menu)
             menu.close()
@@ -291,7 +290,9 @@ class TranslatorGroup:
         paras = [s.strip() for s in text.split("\n\n") if len(s.strip()) > 0]
         sentences = []
         for para in paras:
-            sentences.append([s.strip() for s in para.split("\n") if len(s.strip()) > 0])
+            sentences.append(
+                [s.strip() for s in para.split("\n") if len(s.strip()) > 0]
+            )
         return paras, sentences
 
     def __init__(self, vanilla) -> None:
@@ -444,7 +445,7 @@ def create_empty_translate(mod_root_path: str):
 
 
 def build_translate_group(
-        glossaries: List[str], key_file: str, value_file: str, mode: str
+    glossaries: List[str], key_file: str, value_file: str, mode: str
 ):
     group = TranslatorGroup(vanilla=VanillaTranslator())
     group.add_extra_translator(IgnoreErrorTranslator())
@@ -706,11 +707,9 @@ class TranslateGUI(QWidget):
 def main():
     init_logger()
 
-    CONFIG.load_config("config.json")
-
+    CONFIG.load_config("config_er.json")
     app = QApplication(sys.argv)
     qdarktheme.setup_theme("light")
-
     ex = TranslateGUI()
     sys.exit(app.exec())
 

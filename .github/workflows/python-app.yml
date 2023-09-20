@@ -17,18 +17,20 @@ jobs:
 
       - name: Pyninstaller
         run: |
-          pyinstaller -w -F -i "app.ico" main.py
+          pyinstaller -w -F -i "app.ico" main_er.py
+          pyinstaller -w -F -i "app.ico" main_ds3.py
+
 
       - name: Create Artifact
         id: vars2
         run: |
           mkdir out
-          cp ./dist/main.exe ./out/
+          cp ./dist/main*.exe ./out/
           cp -r ./db ./out/
           cp -r ./Yabber131/ ./out/
           cp -r ./glossaries/ ./out/
           cp ./README.txt ./out/
-          cp ./config.json ./out/
+          cp ./config*.json ./out/
           cp ./更新日志.txt ./out/
           cp ./app.ico ./out/
         shell: bash

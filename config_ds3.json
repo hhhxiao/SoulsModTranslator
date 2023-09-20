@@ -1,0 +1,9 @@
+{
+    "source_lang": "engUS",
+    "export_as_docx": false,
+    "tmp_path": ".tmp",
+    "yabber_bin": ".\\Yabber131\\",
+    "name": "黑暗之魂2(dlc2)",
+    "inter_root": "msg",
+    "vanilla_db_path": ".\\db\\DS3"
+}
