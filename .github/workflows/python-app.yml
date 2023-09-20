@@ -13,7 +13,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install PyQt6
-          pip install qdarktheme
+          pip install pyqtdarktheme
 
       - name: Pyninstaller
         run: |
@@ -30,7 +30,7 @@ jobs:
           cp ./README.txt ./out/
           cp ./config.json ./out/
           cp ./更新日志.txt ./out/
-          cp ./app.ico ./outs/
+          cp ./app.ico ./out/
         shell: bash
 
       - name: Upload Actions File
