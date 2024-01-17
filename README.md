@@ -7,7 +7,7 @@
 
 # 下载
 
-[https://github.com/hhhxiao/EldenRingModTranslator/releases](https://github.com/hhhxiao/EldenRingModTranslator/releases)
+[https://github.com/hhhxiao/EldenRingModTranslator/releases] (https://github.com/hhhxiao/EldenRingModTranslator/releases)
 
 # 使用教程
 
