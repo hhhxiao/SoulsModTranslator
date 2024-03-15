@@ -1,4 +1,6 @@
 {
+    "words":{},
+    "phases":{
     "Dagger": "匕首",
     "Parrying Dagger": "格挡匕首",
     "Ghost Blade": "亡灵小刀",
@@ -665,4 +667,4 @@
     "Golden Dual Swords": "黄金双剑",
     "Prince's Shield": "王子盾",
     "Ancient Dragon Great Shield": "古龙大盾"
-}
+}}

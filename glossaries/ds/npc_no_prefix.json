@@ -1,4 +1,5 @@
 {
+    "words":{
     "andre": "安德烈",
     "rickert": "李凯尔特",
     "vamos": "巴摩斯",
@@ -109,4 +110,6 @@
     "lothric": "洛斯里克",
     "ariandel": "艾雷德尔神父",
     "argo": "阿尔戈法官"
+},
+"phases":{}
 }

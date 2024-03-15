@@ -1,4 +1,5 @@
-{
+{   "words":{},
+    "phases":{
     "Catarina Helm": "卡塔利纳头盔",
     "Catarina Armor": "卡塔利纳护甲",
     "Catarina Gauntlets": "卡塔利纳护臂",
@@ -890,4 +891,4 @@
     "Old Monarch's Crown": "老王王冠",
     "Old Monarch's Robe": "老王长袍",
     "Frigid Valley Mask": "冷冽谷的铁面具"
-}
+}}
