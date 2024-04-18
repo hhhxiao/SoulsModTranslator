@@ -96,7 +96,7 @@
                     帮助没有相关技术基础的玩家高效机翻Mod，同时也能帮助人工翻译者省去繁杂的额外步骤，专注翻于译。
                 </TextBlock>
                 <TextBlock Margin="16,0" TextWrapping="Wrap">
-                    本软件目前支持艾尔登法环，只狼和黑暗之魂3等游戏，采用GPL v3.0协议，所有代码完全开源。
+                    本软件目前支持艾尔登法环，只狼和黑暗之魂3，采用GPL v3.0协议，所有代码完全开源。
                 </TextBlock>
                 <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">作者信息</Label>
                 <TextBlock Margin="16,0">
@@ -109,7 +109,7 @@
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     作者爱发电:
-                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                    <Hyperlink NavigateUri="https://afdian.net/@hhhxiao" RequestNavigate="Hyperlink_RequestNavigate">https://afdian.net/@hhhxiao</Hyperlink>
                 </TextBlock>
 
                 <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">教程与反馈</Label>
@@ -119,24 +119,23 @@
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     前往Github反馈:
-                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                    <Hyperlink NavigateUri="https://github.com/hhhxiao/SoulsModTranslator/issues" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao/SoulsModTranslator/issues</Hyperlink>
                 </TextBlock>
 
 
-                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">Credits</Label>
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">第三方库</Label>
                 <TextBlock Margin="16,0">
-                    SoulsFormats:
-                    <Hyperlink NavigateUri="https://github.com/JKAnderson/SoulsFormats" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/JKAnderson/SoulsFormats</Hyperlink>
+                  FromSoftware引擎dcx文件读写：
+                    <Hyperlink NavigateUri="https://github.com/JKAnderson/SoulsFormats" RequestNavigate="Hyperlink_RequestNavigate">SoulsFormats</Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
-                    Adonis-ui:
-                    <Hyperlink NavigateUri="https://github.com/benruehl/adonis-ui" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/benruehl/adonis-ui</Hyperlink>
+                    UI界面设计：
+                    <Hyperlink NavigateUri="https://github.com/benruehl/adonis-ui" RequestNavigate="Hyperlink_RequestNavigate">adonis-ui</Hyperlink>（MIT License）
                 </TextBlock>
                 <TextBlock Margin="16,0">
-                    DSMapStudio:
-                    <Hyperlink NavigateUri="https://github.com/soulsmods/DSMapStudio" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/soulsmods/DSMapStudio</Hyperlink>
+                    Excel表格文件读写:
+                    <Hyperlink NavigateUri="https://github.com/nissl-lab/npoi" RequestNavigate="Hyperlink_RequestNavigate"> npoi</Hyperlink> （Apache License Version 2.0）
                 </TextBlock>
-
             </StackPanel>
         </StackPanel>
     </Grid>
