@@ -1,11 +1,4 @@
-*.xml
-*.fmg
-*.docx
-logs
-.vscode
-build
-dist
-unpacked_vanilla
-*.spec
-.idea/*
-__pycache__/*
+bin
+obj
+.vs
+.idea

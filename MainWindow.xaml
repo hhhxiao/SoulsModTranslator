@@ -1,0 +1,143 @@
+﻿<adonisControls:AdonisWindow x:Class="SoulsModTranslator.MainWindow"
+                             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                             xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+                             xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+                             PlaceTitleBarOverContent="False"
+                             Title="魂友MOD翻译工具v2.0"
+                             Height="615" Width="820"
+                             FontSize="14"
+                             ShrinkTitleBarWhenMaximized="True">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <GroupBox Grid.Column="0" Padding="0">
+            <StackPanel>
+                <Border Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}" />
+                <Button Name="TranslateTab" Click="TranslateTab_OnClick" Height="40" Content="翻译"
+                        Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
+                </Button>
+                <Button Name="ToolTab" Click="TranslateTab_OnClick" Height="40" Content="工具"
+                        Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
+                </Button>
+                <Button Name="AboutTab" Click="TranslateTab_OnClick" Height="40" Content="关于"
+                        Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
+                </Button>
+            </StackPanel>
+        </GroupBox>
+
+        <StackPanel Grid.Column="1">
+
+            <StackPanel Name="TranslateStackPanel" Margin="10">
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">基本设置</Label>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="4*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40"></RowDefinition>
+                        <RowDefinition Height="40"></RowDefinition>
+                    </Grid.RowDefinitions>
+
+                    <Label Margin="2" Grid.Row="0" Grid.Column="0" Content="选择msg目录" VerticalContentAlignment="Center" FontWeight="Normal"></Label>
+                    <TextBox Margin="2" Grid.Row="0" Grid.Column="1" Name="ModPathTextBox" VerticalContentAlignment="Center" MaxLines="1"></TextBox>
+                    <Button Margin="2" Grid.Row="0" Grid.Column="2"
+                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}"
+                            Click="SelectPathButton_Click">
+                        浏览
+                    </Button>
+                    <Label Margin="2" Grid.Row="1" Grid.Column="0" VerticalContentAlignment="Center" FontWeight="Normal">选择数据库</Label>
+                    <ComboBox Margin="2" Name="DbComboBox" VerticalContentAlignment="Center" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"></ComboBox>
+                </Grid>
+
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">术语表</Label>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40"></RowDefinition>
+                        <RowDefinition Height="200"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Button Margin="2" Grid.Row="0" Grid.Column="0" Click="GlossaryAdd_onClick">添加词汇表</Button>
+                    <Button Margin="2" Grid.Row="0" Grid.Column="1" Click="GlossaryRemove_onClick">删除选中词汇表</Button>
+                    <ListBox Margin="2" SelectionMode="Extended" Name="GlossaryListBox"
+                             Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                    </ListBox>
+                </Grid>
+
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">生成</Label>
+                <CheckBox Name="UseExcelCheckBox" Margin="2">将未翻译文本以.xlsx格式导出（方便上传到谷歌翻译）</CheckBox>
+                <CheckBox Name="SplitCheckBox" Margin="2" IsEnabled="False">未翻译文本过多（大于50K行时）时拆分为多个文件（防止谷歌翻译失败）</CheckBox>
+                <CheckBox Name="UseCompactCheckBox" Margin="2" IsEnabled="False">使用压缩+索引的存储格式(导出文本较少，机翻结果更统一，但是逻辑性更弱)</CheckBox>
+                <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft" Height="50">
+                    <Button Name="GenerateBtn" Click="GenerateBtn_onClick" Margin="2" Width="120"
+                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                        生成翻译文件
+                    </Button>
+                    <Button Name="ExportBtn" Click="ExportBtn_onClick" Margin="2" Width="120" Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">导出未翻译文本</Button>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Name="ToolStackPanel" Margin="10">
+                <Button Margin="2" Height="40" Name="ExportDbBtn" Click="ExportDbBtn_OnClick">从已有翻译中导出对照数据库</Button>
+            </StackPanel>
+
+            <StackPanel Name="AboutStackPanel" Margin="10">
+                <Label Name="AboutTitleLabel" Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">SOFTWARE_NAME by hhhxiao_</Label>
+                <TextBlock Margin="16,0" TextWrapping="Wrap">
+                    本软件可以导出mod新增的所有文本，并导入翻译后的新增文本以生成.msgbng.dcx的标准文本文件。可以
+                    帮助没有相关技术基础的玩家高效机翻Mod，同时也能帮助人工翻译者省去繁杂的额外步骤，专注翻于译。
+                </TextBlock>
+                <TextBlock Margin="16,0" TextWrapping="Wrap">
+                    本软件目前支持艾尔登法环，只狼和黑暗之魂3等游戏，采用GPL v3.0协议，所有代码完全开源。
+                </TextBlock>
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">作者信息</Label>
+                <TextBlock Margin="16,0">
+                    作者Github:
+                    <Hyperlink NavigateUri="https://github.com/hhhxiao" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="16,0">
+                    作者Bilibili:
+                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="16,0">
+                    作者爱发电:
+                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                </TextBlock>
+
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">教程与反馈</Label>
+                <TextBlock Margin="16,0">
+                    使用教程:
+                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="16,0">
+                    前往Github反馈:
+                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                </TextBlock>
+
+
+                <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">Credits</Label>
+                <TextBlock Margin="16,0">
+                    SoulsFormats:
+                    <Hyperlink NavigateUri="https://github.com/JKAnderson/SoulsFormats" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/JKAnderson/SoulsFormats</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="16,0">
+                    Adonis-ui:
+                    <Hyperlink NavigateUri="https://github.com/benruehl/adonis-ui" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/benruehl/adonis-ui</Hyperlink>
+                </TextBlock>
+                <TextBlock Margin="16,0">
+                    DSMapStudio:
+                    <Hyperlink NavigateUri="https://github.com/soulsmods/DSMapStudio" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/soulsmods/DSMapStudio</Hyperlink>
+                </TextBlock>
+
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</adonisControls:AdonisWindow>
