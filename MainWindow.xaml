@@ -115,7 +115,7 @@
                 <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">教程与反馈</Label>
                 <TextBlock Margin="16,0">
                     使用教程:
-                    <Hyperlink NavigateUri="https://space.bilibili.com/34227664" RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                    <Hyperlink NavigateUri="https://www.bilibili.com/video/BV17p421Q7qJ/" RequestNavigate="Hyperlink_RequestNavigate">https://www.bilibili.com/video/BV17p421Q7qJ/</Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     前往Github反馈:
