@@ -8,7 +8,9 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+  <PublishRelease>true</PublishRelease>
   </PropertyGroup>
+
 
   <ItemGroup>
     <Content Include="icon.ico" />
@@ -19,7 +21,7 @@
       <HintPath>SoulsFormats.dll</HintPath>
     </Reference>
   </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="AdonisUI" Version="1.17.1" />
     <PackageReference Include="AdonisUI.ClassicTheme" Version="1.17.1" />

@@ -25,7 +25,7 @@ namespace SoulsModTranslator
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossary");
 
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.0";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.1";
 
         private static void ShowTaskResult(bool success, string succMsg, string failMsg)
         {
