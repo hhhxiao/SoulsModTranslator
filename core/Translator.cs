@@ -41,6 +41,8 @@ public class ExportResult
 
 public class TextTree
 {
+
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     private readonly Dictionary<long, string> Sentences = new();
     public long TextId; //文本ID (= 文件ID * 100000000 + textID)
 
@@ -66,7 +68,14 @@ public class TextTree
 
     public void AddSentence(long id, string sentence)
     {
-        Sentences.Add(id, sentence);
+        if (Sentences.TryGetValue(id, out var oldSentence))
+        {
+            Logger.Warn($"文本{id}内出现重复句子: {oldSentence} -> {sentence}");
+        }
+        else
+        {
+            Sentences.Add(id, sentence); //an item with same key
+        }
     }
 
     public string Collect()
@@ -127,7 +136,7 @@ public static class Translator
 
     public static ExportResult Export(string rootPath, string dbPath)
     {
-        Logger.Info($"开始导出未翻译文本，-msg根目录:{rootPath}，数据库路径:{dbPath}");
+        Logger.Info($"开始导出未翻译文本，msg根目录:{rootPath}，数据库路径:{dbPath}");
         var result = new ExportResult
         {
             Success = false
@@ -162,6 +171,7 @@ public static class Translator
         var translated = TextImporter.Import(translateFileName);
         var textDict = new Dictionary<long, string>();
         var tree = new TextTree(-1);
+        Logger.Info("已成功加载翻译文件");
         langFile.ForeachAllKey(CreateTraverser(db,
             (uid, sentenceId, src) =>
             {
@@ -191,7 +201,6 @@ public static class Translator
                 tree.AddSentence(sentenceId % (uid * 100), dest);
             }));
         Logger.Info($"共翻译 {textDict.Count} 段文本");
-
         var zhocnPath = Path.Combine(rootPath, "zhocn");
         foreach (var bnd in langFile.Bnds)
         {

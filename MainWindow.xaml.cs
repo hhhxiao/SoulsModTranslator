@@ -73,6 +73,7 @@ namespace SoulsModTranslator
 
         public MainWindow()
         {
+            Logger.Info("\n\n\n\n\n===========================New Instance===================================");
             InitializeComponent();
             //
             Glossaries = new ObservableCollection<string>();
