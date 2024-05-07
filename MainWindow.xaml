@@ -121,7 +121,12 @@
                     前往Github反馈:
                     <Hyperlink NavigateUri="https://github.com/hhhxiao/SoulsModTranslator/issues" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao/SoulsModTranslator/issues</Hyperlink>
                 </TextBlock>
+                  <TextBlock Margin="16,0">
+                    更新日志:
+                    <Hyperlink NavigateUri="https://github.com/hhhxiao/SoulsModTranslator/blob/main/changelog.md" RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao/SoulsModTranslator/blob/main/changelog.md</Hyperlink>
+                </TextBlock>
 
+    
 
                 <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">第三方库</Label>
                 <TextBlock Margin="16,0">

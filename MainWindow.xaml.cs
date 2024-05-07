@@ -109,7 +109,9 @@ namespace SoulsModTranslator
             var valuePath = "";
             var savePath = "";
             var keyDialog = new FolderBrowserDialog();
+            keyDialog.Description = "选择源语言路径(engus)";
             var valueDialog = new FolderBrowserDialog();
+            valueDialog.Description = "选择目标语言路径(zhocn)";
             var saveDialog = new SaveFileDialog();
             saveDialog.Filter = "Json文件(*.json)|*";
             saveDialog.FileName = "Untitled.json";
