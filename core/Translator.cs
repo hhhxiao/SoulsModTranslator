@@ -143,7 +143,7 @@ public static class Translator
         };
         var langFile = new LangFile();
         var db = new DB();
-        if (!langFile.Load(Path.Combine(rootPath, "engus")) || !db.Load(dbPath))
+        if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
         {
             Logger.Error("无法加载语言文件或者数据库文件，导出终止");
             return result;
@@ -162,7 +162,7 @@ public static class Translator
         Logger.Info($"开始生成目标语言文件，msg根目录:{rootPath}\n - 数据库路径:{dbPath}，翻译文件路径:{translateFileName}");
         var langFile = new LangFile();
         var db = new DB();
-        if (!langFile.Load(Path.Combine(rootPath, "engus")) || !db.Load(dbPath))
+        if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
         {
             Logger.Error("无法读取语言文件/数据库文件，生成终止");
             return false;
@@ -201,19 +201,17 @@ public static class Translator
                 tree.AddSentence(sentenceId % (uid * 100), dest);
             }));
         Logger.Info($"共翻译 {textDict.Count} 段文本");
-        var zhocnPath = Path.Combine(rootPath, "zhocn");
+        var zhocnPath = Path.Combine(rootPath, Configuration.DestLangPath);
         foreach (var bnd in langFile.Bnds)
         {
             Logger.Info($"开始生成文件 {Path.Join(zhocnPath, bnd.Key)} ");
             foreach (var file in bnd.Value.Files)
             {
                 //replace name form engus to zhocn
-                var newName = file.Name.Replace("engUS", "zhoCN");
+                var newName = file.Name.Replace(Configuration.SrcLangInnerName, Configuration.DestLangInnerName);
                 var fileName = Path.GetFileNameWithoutExtension(newName);
                 file.Name = newName;
-
                 if (LangFile.BlackFileList.Contains(fileName)) continue; //不翻译
-
                 //read fmg and replace
                 var fmg = FMG.Read(file.Bytes);
                 foreach (var entry in fmg.Entries)

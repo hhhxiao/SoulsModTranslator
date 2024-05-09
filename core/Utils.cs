@@ -16,11 +16,17 @@ public static class Utils
 
     public static Dictionary<string, string> LoadJsonToMap(string fileName)
     {
-        var str = File.ReadAllText(fileName);
-        var res = JsonSerializer.Deserialize<Dictionary<string, string>>(str);
-        if (res != null) return res;
-        Logger.Info("Bad Json format" + fileName);
-        return new Dictionary<string, string>();
+        var dict = new Dictionary<string, string>();
+        try
+        {
+            var str = File.ReadAllText(fileName);
+            dict = JsonSerializer.Deserialize<Dictionary<string, string>>(str);
+        }
+        catch (Exception e)
+        {
+            Logger.Error($"无法读取Json文件{fileName}", e);
+        }
+        return dict ?? new Dictionary<string, string>();
     }
 
     public static void BackupFileOrDir(string path)

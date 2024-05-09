@@ -23,9 +23,11 @@ namespace SoulsModTranslator
     public partial class MainWindow : AdonisWindow
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
-        private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossary");
-
+        private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
         private static readonly string SoftwareName = "魂游MOD翻译工具 v2.2";
+
+
+
 
         private static void ShowTaskResult(bool success, string succMsg, string failMsg)
         {
@@ -36,7 +38,7 @@ namespace SoulsModTranslator
 
         private static List<string> LoadDbFiles()
         {
-            Logger.Info($"{DbPath}");
+            Logger.Info($"数据库路径是：{DbPath}");
             if (!Directory.Exists(DbPath))
             {
                 return new List<string>();
@@ -141,6 +143,7 @@ namespace SoulsModTranslator
         {
             var dialog = new System.Windows.Forms.OpenFileDialog();
             dialog.InitialDirectory = GlossaryPath;
+            dialog.Filter = "Json 文件 (*.json)|*.json|所有文件|*.*";
             dialog.Multiselect = true;
             var result = dialog.ShowDialog();
             if (result != System.Windows.Forms.DialogResult.OK) return;
@@ -215,16 +218,19 @@ namespace SoulsModTranslator
             }
 
             //词汇表预处理
-            var glossary = new Glossary();
-            if (!glossary.Load(this.Glossaries.ToList()))
+            var useGlossary = UseGlossaryCheckBox.IsChecked ?? false;
+            if (useGlossary)
             {
-                Logger.Warn("无法加载词汇表");
+                var glossary = new Glossary();
+                if (!glossary.Load(this.Glossaries.ToList()))
+                {
+                    Logger.Warn("无法加载词汇表");
+                }
+                else
+                {
+                    res = glossary.Process(res);
+                }
             }
-            else
-            {
-                res = glossary.Process(res);
-            }
-
             //写入磁盘
             var exportAsExcel = UseExcelCheckBox.IsChecked ?? false;
             var dialog = new SaveFileDialog();

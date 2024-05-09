@@ -15,7 +15,7 @@ def zip_folder(folder_path, output_path, compression=zipfile.ZIP_DEFLATED):
 code = 0
 if os.system("dotnet publish") != 0:
     exit(-1)
-copy_files = ["db/", "changelog.md", "oo2core_6_win64.dll"]
+copy_files = ["db/", "glossaries/", "changelog.md", "oo2core_6_win64.dll"]
 for file in copy_files:
     os.system("cp -r {} {}".format(file, publish_path))
 zip_folder(publish_path, "SoulsModTranslator.zip")

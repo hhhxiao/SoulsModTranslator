@@ -16,8 +16,6 @@ public class LangFile
         "TextEmbedImageName_win64", //键位相关
     };
 
-    public const string ItemName = "item.msgbnd.dcx";
-    public const string MenuName = "menu.msgbnd.dcx";
     public BND4? ItemBnd { get; private set; }
     public BND4? MenuBnd { get; private set; }
 
@@ -39,7 +37,7 @@ public class LangFile
         {
             if (!bndFile.Name.EndsWith(".msgbnd.dcx")) continue;
             Logger.Info($"发现 msgbnd.dcx 文件: {bndFile.Name}");
-            if (bndFile.Name == "ngword.msgbnd.dcx") continue;
+            if (bndFile.Name == "ngword.msgbnd.dcx") continue; //跳过这个ng单词
 
             try
             {
@@ -47,7 +45,7 @@ public class LangFile
                 if (bnd.Files.Any(fmgFile => !fmgFileIdSet.Add(fmgFile.ID)))
                 {
                     Logger.Error($"发现重复的FMG文件，文件夹{langRootPath}中是否存在与{bndFile.Name}的dcx" +
-                                 $"文件(比如黑暗之魂III的item_dlc1.msgbnd.dcx和item_dlc2.msgbnd.dcx，)请根据需求删除(或修改后缀名)其中一个");
+                                 $"文件(比如黑暗之魂III的item_dlc1.msgbnd.dcx和item_dlc2.msgbnd.dcx)请根据需求删除(或修改后缀名)其中一个");
                     return false;
                 }
 

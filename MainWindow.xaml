@@ -56,6 +56,7 @@
                 </Grid>
 
                 <Label Margin="8" VerticalContentAlignment="Center" FontSize="20" FontWeight="Normal">术语表</Label>
+                <CheckBox Name="UseGlossaryCheckBox" Margin="2">启用术语表（导出时使用词汇表替换未翻译文本内的专有名词）</CheckBox>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -63,7 +64,7 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="40"></RowDefinition>
-                        <RowDefinition Height="200"></RowDefinition>
+                        <RowDefinition Height="180"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Button Margin="2" Grid.Row="0" Grid.Column="0" Click="GlossaryAdd_onClick">添加词汇表</Button>
                     <Button Margin="2" Grid.Row="0" Grid.Column="1" Click="GlossaryRemove_onClick">删除选中词汇表</Button>
