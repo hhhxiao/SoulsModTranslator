@@ -32,6 +32,8 @@ jobs:
 
     - name: Build
       run: |
+        tree -L 2 .
+        cd ./SoulsModTranslator
         dotnet publish /p:OutputType=WinExe
         ls -hl ./bin/Release
        # cp -r ./glossaries ./db "changelog.md"
