@@ -22,8 +22,9 @@ jobs:
 
       - name: Get Commit short hash
         id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-        run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        run: | 
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Restore dependencies and build
