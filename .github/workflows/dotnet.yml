@@ -32,7 +32,7 @@ jobs:
 
     - name: Build
       run: |
-        tree -L 2 .
+        ls -hl .
         cd ./SoulsModTranslator
         dotnet publish /p:OutputType=WinExe
         ls -hl ./bin/Release
