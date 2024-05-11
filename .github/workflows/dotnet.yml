@@ -5,57 +5,49 @@ name: .NET
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: windows-latest
 
     steps:
-    
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 7.0.x
+
+      - name: Get Commit short hash
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Restore dependencies and build
+        run: |
+          dotnet restore
+          dotnet publish /p:OutputType=WinExe
+
+      - name: Create Artifact
+        run: |
+          cp -r ./glossaries ./db changelog.md oo2core_6_win64.dll ./bin/Release/net7.0-windows/publish
+          #7z a SoulsModTranslator${{steps.vars.outputs.latest_tag}}.zip ./bin/Release/net7.0-windows/publish
+          python create_release_note.py
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SoulsModTranslator-${{steps.vars.outputs.sha_short}}
+          path: ./bin/Release/net7.0-windows/publish
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
       with:
-        dotnet-version: 7.0.x
-
-      
-    - name: Get Commit short hash
-      id: vars
-      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Restore dependencies and build
-      run: |
-        dotnet restore
-        dotnet publish /p:OutputType=WinExe
-        
-    - name: Create Artifact
-      run: |
-       cp -r ./glossaries ./db changelog.md oo2core_6_win64.dll ./bin/Release/net7.0-windows/publish
-       #7z a SoulsModTranslator-${{steps.vars.outputs.sha_short}}.zip ./bin/Release/net7.0-windows/publish
-      shell: bash
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: SoulsModTranslator-${{steps.vars.outputs.sha_short}}
-        path: ./bin/Release/net7.0-windows/publish
-
-  
-
-    # - name: Release
-    #   uses: softprops/action-gh-release@v2
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   with:
-    #    body_path: ${{ github.workspace }}-CHANGELOG.txt
-    #    files: |
-    #     ${{steps.vars2.outputs.archive_name}}.zip
-    #    repository: hhhxiao/SoulsModTranslator
-    
-
-      
-     
-
+       body_path: ${{ github.workspace }}/release_note
+       files: |
+         SoulsModTranslator${{steps.vars.outputs.latest_tag}}.zip
+       repository: hhhxiao/SoulsModTranslator
