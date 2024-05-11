@@ -36,12 +36,25 @@ jobs:
     - name: Create Artifact
       run: |
        cp -r ./glossaries ./db changelog.md oo2core_6_win64.dll ./bin/Release/net7.0-windows/publish
+       #7z a SoulsModTranslator-${{steps.vars.outputs.sha_short}}.zip ./bin/Release/net7.0-windows/publish
       shell: bash
 
     - uses: actions/upload-artifact@v4
       with:
-        name: SoulsModTranslator-${{steps.vars.outputs.sha_short}}.zip
+        name: SoulsModTranslator-${{steps.vars.outputs.sha_short}}
         path: ./bin/Release/net7.0-windows/publish
+
+  
+
+    # - name: Release
+    #   uses: softprops/action-gh-release@v2
+    #   if: startsWith(github.ref, 'refs/tags/')
+    #   with:
+    #    body_path: ${{ github.workspace }}-CHANGELOG.txt
+    #    files: |
+    #     ${{steps.vars2.outputs.archive_name}}.zip
+    #    repository: hhhxiao/SoulsModTranslator
+    
 
       
      
