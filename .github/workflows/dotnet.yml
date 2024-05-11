@@ -22,7 +22,7 @@ jobs:
 
       - name: Get Commit short hash
         id: vars
-        run: | 
+        run: |
           echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
           echo "latest_tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
         shell: bash
@@ -44,11 +44,11 @@ jobs:
           name: SoulsModTranslator-${{steps.vars.outputs.sha_short}}
           path: ./bin/Release/net7.0-windows/publish
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-       body_path: ${{ github.workspace }}/release_note
-       files: |
-         SoulsModTranslator${{steps.vars.outputs.latest_tag}}.zip
-       repository: hhhxiao/SoulsModTranslator
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          body_path: ${{ github.workspace }}/release_note
+          files: |
+            SoulsModTranslator${{steps.vars.outputs.latest_tag}}.zip
+          repository: hhhxiao/SoulsModTranslator
