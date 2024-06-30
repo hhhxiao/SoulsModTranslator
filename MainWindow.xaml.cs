@@ -24,7 +24,7 @@ namespace SoulsModTranslator
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.2";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.3";
 
 
 
@@ -128,9 +128,28 @@ namespace SoulsModTranslator
             savePath = saveDialog.FileName;
             var res = await Task.Run(() => DbTool.CreateDb(keyPath, valuePath, savePath));
             ShowTaskResult(res, "导出成功", "导出失败");
+
         }
 
-
+        private async void MergeDbBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.InitialDirectory = DbPath;
+            dialog.Filter = "Json 文件 (*.json)|*.json|所有文件|*.*";
+            dialog.Multiselect = true;
+            var result = dialog.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK) return;
+            //save path
+            var savePath = "";
+            var saveDialog = new SaveFileDialog();
+            saveDialog.Filter = "Json文件(*.json)|*";
+            saveDialog.FileName = "Untitled.json";
+            var saveResult = saveDialog.ShowDialog();
+            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
+            savePath = saveDialog.FileName;
+            var res = await Task.Run(() => DbTool.MergeDB(dialog.FileNames, savePath));
+            ShowTaskResult(res, "合并成功", "合并失败");
+        }
         private void TranslateTab_OnClick(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn)

@@ -44,8 +44,9 @@ public class LangFile
                 var bnd = BND4.Read(Path.Combine(langRootPath, bndFile.Name));
                 if (bnd.Files.Any(fmgFile => !fmgFileIdSet.Add(fmgFile.ID)))
                 {
-                    Logger.Error($"发现重复的FMG文件，文件夹{langRootPath}中是否存在与{bndFile.Name}的dcx" +
-                                 $"文件(比如黑暗之魂III的item_dlc1.msgbnd.dcx和item_dlc2.msgbnd.dcx)请根据需求删除(或修改后缀名)其中一个");
+                    Logger.Error($"发现重复的FMG语言文件，文件夹{langRootPath}中是否存在与{bndFile.Name}相同的dcx" +
+                                 $"文件(比如黑暗之魂III和艾尔登法环)请根据需求删除(或修改后缀名)其中一个");
+                    Logger.Error($"推荐做法为新建文件夹并将除了item_dlc02.msgbnd.dcx以及item_dlc02.msgbnd.dcx之外的dcx文件移动到该文件夹内");
                     return false;
                 }
 

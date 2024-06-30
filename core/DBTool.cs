@@ -58,4 +58,29 @@ public static class DbTool
         Logger.Info($"已生成对照数据库：{savePath}");
         return true;
     }
+
+
+    public static bool MergeDB(string[] fileNames, string savePath)
+    {
+        Logger.Info($"合并以下数据库为：{savePath}");
+        var newDB = new Dictionary<string, string>();
+        var count = 0;
+        foreach (var file in fileNames)
+        {
+            var db = Utils.LoadJsonToMap(file);
+            Logger.Info($" - {file}: {db.Count}");
+            count += db.Count;
+            foreach (var kv in db)
+            {
+                if (!newDB.ContainsKey(kv.Key))
+                {
+                    newDB.Add(kv.Key, kv.Value);
+                }
+            }
+        }
+
+        Logger.Info($"{count}->{newDB.Count}");
+        Utils.SaveMapAsJson(newDB, savePath);
+        return true;
+    }
 }
