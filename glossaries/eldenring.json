@@ -1,7 +1,6 @@
 {
     "phases": {
-        "Smithing Stone": "锻造石",
-        "Ash of War": "战灰"
+        "hero's": "英雄的"
     },
     "regex": {
         "(R|r)unes?": "卢恩"

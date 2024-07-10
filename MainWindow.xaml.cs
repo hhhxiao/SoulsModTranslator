@@ -26,9 +26,6 @@ namespace SoulsModTranslator
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
         private static readonly string SoftwareName = "魂游MOD翻译工具 v2.5";
 
-
-
-
         private static void ShowTaskResult(bool success, string succMsg, string failMsg)
         {
             var caption = success ? "提示" : "错误";
@@ -75,7 +72,7 @@ namespace SoulsModTranslator
 
         public MainWindow()
         {
-            Logger.Info("\n\n\n\n\n===========================New Instance===================================");
+            Logger.Info("\n\n\n===========================New Instance===================================");
             InitializeComponent();
             //
             Glossaries = new ObservableCollection<string>();
@@ -194,7 +191,7 @@ namespace SoulsModTranslator
             var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
             if (modRootPath.Length == 0)
             {
-                ShowTaskResult(false, "", "请先设置MOD根目录");
+                ShowTaskResult(false, "", "请先设置msg目录");
                 return;
             }
 
@@ -218,7 +215,7 @@ namespace SoulsModTranslator
             var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
             if (modRootPath.Length == 0)
             {
-                ShowTaskResult(false, "", "请先设置MOD根目录");
+                ShowTaskResult(false, "", "请先设置msg目录");
                 return;
             }
 
@@ -236,14 +233,14 @@ namespace SoulsModTranslator
                 return;
             }
 
-            //词汇表预处理
+            //术语表预处理
             var useGlossary = UseGlossaryCheckBox.IsChecked ?? false;
             if (useGlossary)
             {
-                var glossary = new Glossary();
+                var glossary = new Glossary(IgnoreCaseCheckBox.IsChecked ?? false);
                 if (!glossary.Load(this.Glossaries.ToList()))
                 {
-                    Logger.Warn("无法加载词汇表");
+                    Logger.Warn("无法加载术语表");
                 }
                 else
                 {

@@ -5,8 +5,8 @@
                              xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                              PlaceTitleBarOverContent="False"
                              Title="魂友MOD翻译工具v2.0"
-                             Height="615"
-                             Width="820"
+                             Height="630"
+                             Width="840"
                              FontSize="14"
                              ShrinkTitleBarWhenMaximized="True">
 
@@ -96,7 +96,10 @@
                        FontSize="20"
                        FontWeight="Normal">术语表</Label>
                 <CheckBox Name="UseGlossaryCheckBox"
-                          Margin="2">启用术语表（导出时使用词汇表替换未翻译文本内的专有名词）</CheckBox>
+                          Margin="2">启用术语表（导出时使用术语表替换未翻译文本内的专有名词）</CheckBox>
+                <CheckBox Name="IgnoreCaseCheckBox"
+                          IsEnabled="False"
+                          Margin="2">忽视大小写（使用术语表进行匹配时同一个字母的大小写通用）</CheckBox>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -109,11 +112,11 @@
                     <Button Margin="2"
                             Grid.Row="0"
                             Grid.Column="0"
-                            Click="GlossaryAdd_onClick">添加词汇表</Button>
+                            Click="GlossaryAdd_onClick">添加术语表</Button>
                     <Button Margin="2"
                             Grid.Row="0"
                             Grid.Column="1"
-                            Click="GlossaryRemove_onClick">删除选中词汇表</Button>
+                            Click="GlossaryRemove_onClick">删除选中术语表</Button>
                     <ListBox Margin="2"
                              SelectionMode="Extended"
                              Name="GlossaryListBox"
