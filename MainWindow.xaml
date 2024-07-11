@@ -98,7 +98,6 @@
                 <CheckBox Name="UseGlossaryCheckBox"
                           Margin="2">启用术语表（导出时使用术语表替换未翻译文本内的专有名词）</CheckBox>
                 <CheckBox Name="IgnoreCaseCheckBox"
-                          IsEnabled="False"
                           Margin="2">忽视大小写（使用术语表进行匹配时同一个字母的大小写通用）</CheckBox>
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -134,10 +133,24 @@
                           Margin="2">将未翻译文本以.xlsx格式导出（方便上传到谷歌翻译）</CheckBox>
                 <CheckBox Name="SplitCheckBox"
                           Margin="2"
+                          Visibility="Collapsed"
                           IsEnabled="False">未翻译文本过多（大于50K行时）时拆分为多个文件（防止谷歌翻译失败）</CheckBox>
                 <CheckBox Name="UseCompactCheckBox"
                           Margin="2"
+                          Visibility="Collapsed"
                           IsEnabled="False">使用压缩+索引的存储格式(导出文本较少，机翻结果更统一，但是逻辑性更弱)</CheckBox>
+
+                <CheckBox Name="AutoSortCheckBox"
+                          Margin="2"
+                          IsEnabled="False">导出时将经术语表处理后不包含ASCII字符的文本集中到一起</CheckBox>
+                <CheckBox Name="AutoRemoveSpaceCheckBox"
+                          Margin="2"
+                          IsEnabled="False">导入时自动移除中文附近的空格</CheckBox>
+
+
+
+
+
                 <StackPanel Orientation="Horizontal"
                             FlowDirection="RightToLeft"
                             Height="50">

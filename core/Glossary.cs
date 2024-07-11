@@ -23,6 +23,7 @@ public class Glossary
     private IOrderedEnumerable<KeyValuePair<string, string>>? orderedPhaseDict = null;
 
     private List<RegexMatchRule> _NormalRegexList = new List<RegexMatchRule>();
+
     //TODO: 分两类，支持正则和字符串
 
     private bool _IgnoreCase = false;
@@ -56,7 +57,10 @@ public class Glossary
                     var phaseDict = dict["phases"];
                     foreach (var kv in phaseDict)
                     {
-                        phaseKV.TryAdd(kv.Key, kv.Value);
+                        //如果忽略大小写，就统一使用小写字母来构建正则，方便之后做替换
+                        //否则使用原样
+                        var key = this._IgnoreCase ? kv.Key.ToLower() : kv.Key;
+                        phaseKV.Add(key, kv.Value);
                     }
                 }
                 //读取正则表
@@ -76,13 +80,12 @@ public class Glossary
         }
 
 
-        //build regex
+        //排序，优先替换更长的短语组
         orderedPhaseDict = phaseKV.OrderByDescending(kv => kv.Key.Length); //先匹配字符串
-        //string regex
         //构建字符替换的正则,\b(p1|p2|p3....)按照单词边界匹配，排序是为了优先匹配长的
         var phasePattern = @"\b(" + string.Join("|", orderedPhaseDict.Select(kv => Regex.Escape(kv.Key))) + @")\b";
         this._phaseRegex = new Regex(phasePattern, _IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
-        //normal regex
+        //构建普通正则短语组
         try
         {
             foreach (var regexString in regexKV)
@@ -100,6 +103,7 @@ public class Glossary
             Logger.Info("无法初始化正则表达式: " + e.Message);
         }
         Logger.Info($"共发现{phaseKV.Count} 个短语以及 {_NormalRegexList.Count}个正则表达式");
+        Logger.Debug($"{phaseKV.ToArray()[0].Key}");
         return true;
     }
 
@@ -110,6 +114,7 @@ public class Glossary
         var output = this._phaseRegex?.Replace(input, match =>
             {
                 var key = match.Value;
+                if (this._IgnoreCase) key = key.ToLower(); //如果是忽视大小写模式，则根据小写进行查询，这里和上面的做统一
                 if (orderedPhaseDict == null) return key;
                 var dictEntry = orderedPhaseDict.FirstOrDefault(kv => key.Equals(kv.Key));
                 return dictEntry.Value ?? "[ERROR KEY]";
