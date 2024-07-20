@@ -226,6 +226,13 @@
                                RequestNavigate="Hyperlink_RequestNavigate">https://www.bilibili.com/video/BV17p421Q7qJ/</Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
+                    文档:
+                    <Hyperlink NavigateUri="https://hhhxiao.github.io/SoulsModTranslator/"
+                               RequestNavigate="Hyperlink_RequestNavigate">https://hhhxiao.github.io/SoulsModTranslator/</Hyperlink>
+                </TextBlock>
+
+
+                <TextBlock Margin="16,0">
                     前往Github反馈:
                     <Hyperlink NavigateUri="https://github.com/hhhxiao/SoulsModTranslator/issues"
                                RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao/SoulsModTranslator/issues</Hyperlink>
