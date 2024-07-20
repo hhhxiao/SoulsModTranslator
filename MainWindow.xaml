@@ -142,7 +142,7 @@
 
                 <CheckBox Name="AutoSortCheckBox"
                           Margin="2"
-                          IsEnabled="False">导出时将经术语表处理后不包含ASCII字符的文本集中到一起</CheckBox>
+                          IsEnabled="True">导出时将经术语表处理后不包含ASCII字符的文本集中到一起</CheckBox>
                 <CheckBox Name="AutoRemoveSpaceCheckBox"
                           Margin="2"
                           IsEnabled="False">导入时自动移除中文附近的空格</CheckBox>

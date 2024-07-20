@@ -17,8 +17,8 @@ public class ExportResult
     }
 
     public bool Success = false;
-    public readonly List<Item> PhaseList = new();
-    public readonly List<Item> SentenceList = new();
+    public List<Item> PhaseList = new();
+    public List<Item> SentenceList = new();
 
     public static readonly List<string> PhaseFileList = new()
     {

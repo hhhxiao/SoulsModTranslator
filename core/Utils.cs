@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SoulsModTranslator.core;
 
@@ -41,5 +42,20 @@ public static class Utils
             Directory.Move(path, newPath);
             Logger.Info($"备份: {path} -> {newPath}");
         }
+    }
+
+    static int CountChineseCharacters(string input)
+    {
+        System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[\u4e00-\u9fff]");
+        MatchCollection matches = regex.Matches(input);
+        return matches.Count;
+    }
+    public static double GetChineseCharacterRatio(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return 0.0;
+
+        int totalLength = text.Length;
+        int chineseCharacterCount = Regex.Matches(text, @"[\u4e00-\u9fff]").Count;
+        return (double)chineseCharacterCount / totalLength;
     }
 }

@@ -6,6 +6,10 @@ namespace SoulsModTranslator.core;
 
 public static class TextExporter
 {
+
+
+    private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
     private static (List<KeyValuePair<long, List<int>>>, List<KeyValuePair<string, int>>) ReIndex(List<ExportResult.Item> l, string splitor)
     {
         var indexList = new Dictionary<long, List<int>>();
@@ -116,8 +120,24 @@ public static class TextExporter
         book.Write(file);
     }
 
-    public static bool Export(string fileName, ExportResult exportResult, bool excel, bool compressed)
+    public static bool Export(string fileName, ExportResult exportResult, bool excel, bool resort, bool compressed)
     {
+
+        Logger.Info("Exporter:" + fileName);
+        Logger.Info($"   Phase list size: {exportResult.PhaseList.Count}");
+        Logger.Info($"   导出句子条数:  {exportResult.SentenceList.Count}");
+        Logger.Info("   是否导出为Excel:  " + excel);
+        Logger.Info("   是否重排:  " + resort);
+        Logger.Info("   是否压缩存储（未实装）:  " + compressed);
+        if (resort)
+        {
+            exportResult.SentenceList = exportResult.SentenceList.OrderByDescending(item => Utils.GetChineseCharacterRatio(item.Text))
+            .ThenBy(item => item.Id).ToList();
+
+            // exportResult.PhaseList = exportResult.PhaseList.OrderByDescending(item => Utils.GetChineseCharacterRatio(item.Text))
+            // .ThenBy(item => item.Id).ToList();
+        }
+
         if (!excel)
         {
             var list = exportResult.PhaseList.Select(item => $"{item.Id}||{item.Text}").ToList();

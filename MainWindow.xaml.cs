@@ -24,7 +24,7 @@ namespace SoulsModTranslator
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.5";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.7";
 
         private static void ShowTaskResult(bool success, string succMsg, string failMsg)
         {
@@ -249,11 +249,12 @@ namespace SoulsModTranslator
             }
             //写入磁盘
             var exportAsExcel = UseExcelCheckBox.IsChecked ?? false;
+            var resort = AutoSortCheckBox.IsChecked ?? false;
             var dialog = new SaveFileDialog();
             dialog.Filter = exportAsExcel ? "Excel表格文件(*.xlsx)|*" : "文本文件(*.txt)|*";
             dialog.FileName = exportAsExcel ? "text.xlsx" : "text.txt";
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-            var result = await Task.Run(() => TextExporter.Export(dialog.FileName, res, exportAsExcel, false));
+            var result = await Task.Run(() => TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, false));
             Logger.Info($"成功导出未翻译文本 {dialog.FileName}");
             ShowTaskResult(result, "导出成功", "导出失败");
         }
