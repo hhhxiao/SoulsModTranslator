@@ -4,11 +4,11 @@
 
 ## 介绍
 
-本软件可以导出 mod 新增的所有文本，并导入翻译后的新增文本以生成.msgbng.dcx 的标准文本文件。可以帮助没有相关技术基础的玩家高效机翻 Mod，同时也能帮助人工翻译者省去繁杂的额外步骤，专注翻于译。软件目前支持艾尔登法环，只狼和黑暗之魂 3，采用 GPL v3.0 协议，所有代码完全开源。点[](./images/screenshoot_1.png)看软件截图。
+软件可以导出 mod 新增的所有文本，并导入翻译后的新增文本以生成.msgbng.dcx 的标准文本文件。可以帮助没有相关技术基础的玩家高效机翻 Mod，同时也能帮助人工翻译者省去繁杂的额外步骤，专注于翻译。软件目前支持艾尔登法环，只狼和黑暗之魂 3，采用 GPL v3.0 协议，所有代码完全开源。[点击这里](./images/screenshoot_1.png)看软件截图。
 
 ## 使用教程
-
-[https://www.bilibili.com/video/BV17p421Q7qJ/](https://www.bilibili.com/video/BV17p421Q7qJ/)
+- 快速上手视频教程: [https://www.bilibili.com/video/BV17p421Q7qJ/](https://www.bilibili.com/video/BV17p421Q7qJ/)
+- 详细功能文字教程：[https://hhhxiao.github.io/SoulsModTranslator/](https://hhhxiao.github.io/SoulsModTranslator/)
 
 ## 问题反馈
 
