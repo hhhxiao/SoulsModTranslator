@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -57,5 +58,22 @@ public static class Utils
         int totalLength = text.Length;
         int chineseCharacterCount = Regex.Matches(text, @"[\u4e00-\u9fff]").Count;
         return (double)chineseCharacterCount / totalLength;
+    }
+
+    public static void OpenURL(string url)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Unable to open link: {ex.Message}");
+        }
+
     }
 }

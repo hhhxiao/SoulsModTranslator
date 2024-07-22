@@ -136,7 +136,9 @@ public static class Translator
 
     public static ExportResult Export(string rootPath, string dbPath)
     {
-        Logger.Info($"开始导出未翻译文本，msg根目录：{rootPath}，数据库路径：{dbPath}");
+        Logger.Info($"开始导出未翻译文本");
+        Logger.Info($"msg根目录：{rootPath}");
+        Logger.Info($"数据库路径：{dbPath}");
         var result = new ExportResult
         {
             Success = false

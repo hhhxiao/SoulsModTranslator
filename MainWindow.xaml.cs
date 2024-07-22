@@ -8,7 +8,6 @@ using Button = System.Windows.Controls.Button;
 using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 using System.Diagnostics;
 using System.Windows.Navigation;
-using Org.BouncyCastle.Bcpg.Sig;
 using NLog.Targets;
 
 namespace SoulsModTranslator
@@ -20,7 +19,7 @@ namespace SoulsModTranslator
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.7";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.8";
 
         private static MemoryTarget MemoryTarget = new MemoryTarget
         {
@@ -30,8 +29,6 @@ namespace SoulsModTranslator
 
         private static void ShowTaskResult(bool success, string succMsg, string failMsg)
         {
-            // var caption = success ? "提示" : "错误";
-            // var icon = success ? MessageBoxImage.Information : MessageBoxImage.Error;
             if (success)
             {
                 AdonisUI.Controls.MessageBox.Show(success ? succMsg : failMsg, "提示",
@@ -53,7 +50,25 @@ namespace SoulsModTranslator
                 AdonisUI.Controls.MessageBoxButtons.Custom("关闭", "close"),
                 },
             };
-            AdonisUI.Controls.MessageBox.Show(messageBox);
+            var result = AdonisUI.Controls.MessageBox.Show(messageBox);
+            if (messageBox.Result == AdonisUI.Controls.MessageBoxResult.Custom)
+            {
+                var prompt = "[请在这里礼貌且清晰地描述你遇到的问题。] 以下是错误消息和日志。\n";
+                var text = "错误消息: " + failMsg + "\n日志：\n" + log;
+                if (messageBox.ButtonPressed.Id.ToString() == "github")
+                {
+                    System.Windows.Clipboard.SetText(prompt + "```\n" + text + "\n```");
+                    Utils.OpenURL("https://github.com/hhhxiao/SoulsModTranslator/issues/new");
+                }
+                else if (messageBox.ButtonPressed.Id.ToString() == "bilibili")
+                {
+
+                    System.Windows.Clipboard.SetText(prompt + text);
+                    Utils.OpenURL("https://www.bilibili.com/video/BV17p421Q7qJ/");
+                }
+            }
+
+            MemoryTarget.Logs.Clear();
         }
 
         private static List<string> LoadDbFiles()
@@ -105,6 +120,7 @@ namespace SoulsModTranslator
 
             Logger.Info("\n\n===========================New Instance===================================");
             CreateArrayLogger();
+            Logger.Info(SoftwareName);
             InitializeComponent();
             //
             Glossaries = new ObservableCollection<string>();
