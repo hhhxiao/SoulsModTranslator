@@ -123,12 +123,12 @@ public static class TextExporter
     public static bool Export(string fileName, ExportResult exportResult, bool excel, bool resort, bool compressed)
     {
 
-        Logger.Info("Exporter:" + fileName);
-        Logger.Info($"   Phase list size: {exportResult.PhaseList.Count}");
-        Logger.Info($"   导出句子条数:  {exportResult.SentenceList.Count}");
-        Logger.Info("   是否导出为Excel:  " + excel);
-        Logger.Info("   是否重排:  " + resort);
-        Logger.Info("   是否压缩存储（未实装）:  " + compressed);
+        Logger.Info("开始导出：" + fileName);
+        Logger.Info($" - 导出短语条数: {exportResult.PhaseList.Count}");
+        Logger.Info($" - 导出句子条数:  {exportResult.SentenceList.Count}");
+        Logger.Info(" - 是否导出为Excel:  " + excel);
+        Logger.Info(" - 是否重排:  " + resort);
+        Logger.Info(" - 是否压缩存储（未实装）:  " + compressed);
         if (resort)
         {
             exportResult.SentenceList = exportResult.SentenceList.OrderByDescending(item => Utils.GetChineseCharacterRatio(item.Text))

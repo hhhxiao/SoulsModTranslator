@@ -136,7 +136,7 @@ public static class Translator
 
     public static ExportResult Export(string rootPath, string dbPath)
     {
-        Logger.Info($"开始导出未翻译文本，msg根目录:{rootPath}，数据库路径:{dbPath}");
+        Logger.Info($"开始导出未翻译文本，msg根目录：{rootPath}，数据库路径：{dbPath}");
         var result = new ExportResult
         {
             Success = false
@@ -159,7 +159,10 @@ public static class Translator
 
     public static bool Translate(string rootPath, string dbPath, string translateFileName)
     {
-        Logger.Info($"开始生成目标语言文件，msg根目录:{rootPath}\n - 数据库路径:{dbPath}，翻译文件路径:{translateFileName}");
+        Logger.Info($"开始生成目标语言文件");
+        Logger.Info($"msg根目录：{rootPath}");
+        Logger.Info($"数据库路径：{dbPath}");
+        Logger.Info($"翻译文件路径：{translateFileName}");
         var langFile = new LangFile();
         var db = new DB();
         if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
@@ -204,7 +207,7 @@ public static class Translator
         var zhocnPath = Path.Combine(rootPath, Configuration.DestLangPath);
         foreach (var bnd in langFile.Bnds)
         {
-            Logger.Info($"开始生成文件 {Path.Join(zhocnPath, bnd.Key)} ");
+            Logger.Info($"开始生成文件：{Path.Join(zhocnPath, bnd.Key)} ");
             foreach (var file in bnd.Value.Files)
             {
                 //replace name form engus to zhocn

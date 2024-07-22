@@ -1,19 +1,15 @@
-﻿using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Collections.ObjectModel;
 using NLog;
 using SoulsModTranslator.core;
-using DataFormats = System.Windows.DataFormats;
-using DragDropEffects = System.Windows.DragDropEffects;
-using DragEventArgs = System.Windows.DragEventArgs;
-using MessageBox = System.Windows.Forms.MessageBox;
 using System.IO;
 using AdonisUI.Controls;
 using Button = System.Windows.Controls.Button;
-using MessageBoxButton = AdonisUI.Controls.MessageBoxButton;
 using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 using System.Diagnostics;
 using System.Windows.Navigation;
+using Org.BouncyCastle.Bcpg.Sig;
+using NLog.Targets;
 
 namespace SoulsModTranslator
 {
@@ -26,16 +22,43 @@ namespace SoulsModTranslator
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
         private static readonly string SoftwareName = "魂游MOD翻译工具 v2.7";
 
+        private static MemoryTarget MemoryTarget = new MemoryTarget
+        {
+            Name = "memory",
+            Layout = "[${level}] ${message}"
+        };
+
         private static void ShowTaskResult(bool success, string succMsg, string failMsg)
         {
-            var caption = success ? "提示" : "错误";
-            var icon = success ? MessageBoxImage.Information : MessageBoxImage.Error;
-            AdonisUI.Controls.MessageBox.Show(success ? succMsg : failMsg, caption, MessageBoxButton.OK, icon);
+            // var caption = success ? "提示" : "错误";
+            // var icon = success ? MessageBoxImage.Information : MessageBoxImage.Error;
+            if (success)
+            {
+                AdonisUI.Controls.MessageBox.Show(success ? succMsg : failMsg, "提示",
+                AdonisUI.Controls.MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var log = String.Join(Environment.NewLine, MemoryTarget.Logs.ToArray());
+            var messageBox = new MessageBoxModel
+            {
+                Text = failMsg + "\n\n" + log,
+                Caption = "错误",
+                Icon = MessageBoxImage.Information,
+                Buttons =
+                new[]
+                {
+                AdonisUI.Controls.MessageBoxButtons.Custom("复制日志并前往Github反馈", "github"),
+                AdonisUI.Controls.MessageBoxButtons.Custom("复制日志并前往b站反馈", "bilibili"),
+                AdonisUI.Controls.MessageBoxButtons.Custom("关闭", "close"),
+                },
+            };
+            AdonisUI.Controls.MessageBox.Show(messageBox);
         }
 
         private static List<string> LoadDbFiles()
         {
-            Logger.Info($"数据库路径是：{DbPath}");
+            Logger.Info($"数据库根目录：{DbPath}");
             if (!Directory.Exists(DbPath))
             {
                 return new List<string>();
@@ -45,6 +68,13 @@ namespace SoulsModTranslator
             return (from file in files where Path.GetExtension(file).Equals(".json") select Path.GetFileName(file)).ToList();
         }
 
+        public void CreateArrayLogger()
+        {
+            var config = LogManager.Configuration;
+            config.AddTarget(MemoryTarget);
+            config.AddRule(LogLevel.Info, LogLevel.Fatal, MemoryTarget);
+            LogManager.Configuration = config;
+        }
 
         private void SwitchTab(string name)
         {
@@ -72,7 +102,9 @@ namespace SoulsModTranslator
 
         public MainWindow()
         {
-            Logger.Info("\n\n\n===========================New Instance===================================");
+
+            Logger.Info("\n\n===========================New Instance===================================");
+            CreateArrayLogger();
             InitializeComponent();
             //
             Glossaries = new ObservableCollection<string>();
@@ -87,7 +119,6 @@ namespace SoulsModTranslator
             SwitchTab("Translate");
             this.Title = SoftwareName;
             AboutTitleLabel.Content = SoftwareName + "  By hhhxiao";
-
             if (DbList.Count != 0) return;
             ShowTaskResult(false, "", "找不到数据库文件，请检查软件完整性");
             this.Close();
@@ -138,9 +169,11 @@ namespace SoulsModTranslator
             if (result != System.Windows.Forms.DialogResult.OK) return;
             //save path
             var savePath = "";
-            var saveDialog = new SaveFileDialog();
-            saveDialog.Filter = "Json文件(*.json)|*";
-            saveDialog.FileName = "Untitled.json";
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "Json文件(*.json)|*",
+                FileName = "Untitled.json"
+            };
             var saveResult = saveDialog.ShowDialog();
             if (saveResult != System.Windows.Forms.DialogResult.OK) return;
             savePath = saveDialog.FileName;
@@ -157,10 +190,12 @@ namespace SoulsModTranslator
 
         private void GlossaryAdd_onClick(object sender, RoutedEventArgs e)
         {
-            var dialog = new System.Windows.Forms.OpenFileDialog();
-            dialog.InitialDirectory = GlossaryPath;
-            dialog.Filter = "Json 文件 (*.json)|*.json|所有文件|*.*";
-            dialog.Multiselect = true;
+            var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                InitialDirectory = GlossaryPath,
+                Filter = "Json 文件 (*.json)|*.json|所有文件|*.*",
+                Multiselect = true
+            };
             var result = dialog.ShowDialog();
             if (result != System.Windows.Forms.DialogResult.OK) return;
             foreach (var item in dialog.FileNames)
@@ -255,7 +290,7 @@ namespace SoulsModTranslator
             dialog.FileName = exportAsExcel ? "text.xlsx" : "text.txt";
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
             var result = await Task.Run(() => TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, false));
-            Logger.Info($"成功导出未翻译文本 {dialog.FileName}");
+            Logger.Info($"成功导出未翻译文本：{dialog.FileName}");
             ShowTaskResult(result, "导出成功", "导出失败");
         }
 

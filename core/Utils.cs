@@ -25,7 +25,7 @@ public static class Utils
         }
         catch (Exception e)
         {
-            Logger.Error($"无法读取Json文件{fileName}", e);
+            Logger.Error($"无法读取Json文件：{fileName}", e);
         }
         return dict ?? new Dictionary<string, string>();
     }

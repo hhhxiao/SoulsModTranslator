@@ -31,7 +31,7 @@ public class Glossary
     public Glossary(bool caseInsensitive)
     {
         _IgnoreCase = caseInsensitive;
-        Logger.Info($"忽视术语表大小写：{_IgnoreCase}");
+        Logger.Debug($"忽视术语表大小写：{_IgnoreCase}");
     }
 
     public bool Load(IEnumerable<string> glossaryFileNames)

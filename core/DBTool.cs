@@ -44,7 +44,7 @@ public static class DbTool
 
         var sourceDict = ReadKeyValue(srcLang);
         var destDict = ReadKeyValue(destLang);
-        Logger.Info($"从源语言中读取{sourceDict.Count}个文本，从目标语言中读取{destDict.Count}个文本");
+        Logger.Info($"从源语言中读取{sourceDict.Count}条文本，从目标语言中读取{destDict.Count}条文本");
         var dbDict = new Dictionary<string, string>();
         foreach (var (key, srcValue) in sourceDict)
         {
@@ -68,7 +68,7 @@ public static class DbTool
         foreach (var file in fileNames)
         {
             var db = Utils.LoadJsonToMap(file);
-            Logger.Info($" - {file}: {db.Count}");
+            Logger.Info($" - 文件：{file}: 大小：{db.Count}");
             count += db.Count;
             foreach (var kv in db)
             {
@@ -79,7 +79,7 @@ public static class DbTool
             }
         }
 
-        Logger.Info($"{count}->{newDB.Count}");
+        Logger.Info($"新数据库的大小：{count}->{newDB.Count}");
         Utils.SaveMapAsJson(newDB, savePath);
         return true;
     }

@@ -25,7 +25,7 @@ public class LangFile
     {
         if (!Directory.Exists(langRootPath))
         {
-            Logger.Error($"目录不存在： {langRootPath}");
+            Logger.Error($"目录不存在：{langRootPath}");
             return false;
         }
 
@@ -36,7 +36,7 @@ public class LangFile
         foreach (var bndFile in info.GetFiles())
         {
             if (!bndFile.Name.EndsWith(".msgbnd.dcx")) continue;
-            Logger.Info($"发现 msgbnd.dcx 文件: {bndFile.Name}");
+            Logger.Info($"发现msgbnd.dcx文件: {bndFile.Name}");
             if (bndFile.Name == "ngword.msgbnd.dcx") continue; //跳过这个ng单词
 
             try
@@ -46,7 +46,7 @@ public class LangFile
                 {
                     Logger.Error($"发现重复的FMG语言文件，文件夹{langRootPath}中是否存在与{bndFile.Name}相同的dcx" +
                                  $"文件(比如黑暗之魂III和艾尔登法环)请根据需求删除(或修改后缀名)其中一个");
-                    Logger.Error($"推荐做法为新建文件夹并将除了item_dlc02.msgbnd.dcx以及item_dlc02.msgbnd.dcx之外的dcx文件移动到该文件夹内");
+                    Logger.Error($"推荐做法为新建文件夹并将除了item_dlc02.msgbnd.dcx以及menu_dlc02.msgbnd.dcx之外的dcx文件移动到该文件夹内");
                     return false;
                 }
 
@@ -54,7 +54,7 @@ public class LangFile
             }
             catch (Exception e)
             {
-                Logger.Error("不合法的dcx文件格式。 " + e.Message);
+                Logger.Error("不合法的dcx文件格式.\n\n" + e.Message);
                 return false;
             }
         }
