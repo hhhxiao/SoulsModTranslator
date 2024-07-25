@@ -3,7 +3,7 @@ using System.IO;
 using NLog;
 using SoulsFormats;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public class LangFile
 {

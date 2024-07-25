@@ -1,8 +1,6 @@
-﻿using System.IO;
-using Microsoft.VisualBasic.Logging;
-using NPOI.XSSF.UserModel;
+﻿using NPOI.XSSF.UserModel;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public class TextImporter
 {

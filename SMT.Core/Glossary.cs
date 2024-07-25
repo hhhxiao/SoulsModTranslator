@@ -2,11 +2,9 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Windows.Documents;
-using System.Windows.Shapes;
 using NLog;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public class Glossary
 {

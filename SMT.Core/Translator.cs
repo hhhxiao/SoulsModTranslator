@@ -1,12 +1,11 @@
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms.Design;
 using NLog;
 using NPOI.SS.Formula;
 using NPOI.SS.Formula.Functions;
 using SoulsFormats;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public class ExportResult
 {

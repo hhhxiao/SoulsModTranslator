@@ -1,4 +1,4 @@
-﻿<adonisControls:AdonisWindow x:Class="SoulsModTranslator.MainWindow"
+﻿<adonisControls:AdonisWindow x:Class="SMT.WPF.MainWindow"
                              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                              xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"

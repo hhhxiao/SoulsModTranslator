@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public class DB
 {

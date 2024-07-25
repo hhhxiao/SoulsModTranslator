@@ -1,7 +1,6 @@
 ﻿using System.Windows;
 using System.Collections.ObjectModel;
 using NLog;
-using SoulsModTranslator.core;
 using System.IO;
 using AdonisUI.Controls;
 using Button = System.Windows.Controls.Button;
@@ -9,8 +8,9 @@ using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 using System.Diagnostics;
 using System.Windows.Navigation;
 using NLog.Targets;
+using SMT.core;
 
-namespace SoulsModTranslator
+namespace SMT.WPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -65,6 +65,7 @@ namespace SoulsModTranslator
 
                     System.Windows.Clipboard.SetText(prompt + text);
                     Utils.OpenURL("https://www.bilibili.com/video/BV17p421Q7qJ/");
+
                 }
             }
 

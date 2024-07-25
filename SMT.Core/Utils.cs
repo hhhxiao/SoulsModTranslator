@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public static class Utils
 {

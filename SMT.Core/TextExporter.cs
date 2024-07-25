@@ -2,7 +2,7 @@
 using NLog;
 using NPOI.XSSF.UserModel;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public static class TextExporter
 {

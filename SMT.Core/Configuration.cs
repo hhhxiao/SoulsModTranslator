@@ -1,4 +1,4 @@
-﻿namespace SoulsModTranslator.core;
+﻿namespace SMT.core;
 
 public static class Configuration
 {

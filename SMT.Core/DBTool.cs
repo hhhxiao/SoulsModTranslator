@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using NLog;
 
-namespace SoulsModTranslator.core;
+namespace SMT.core;
 
 public static class DbTool
 {

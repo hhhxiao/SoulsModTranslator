@@ -13,13 +13,12 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="SoulsFormats">
-      <HintPath>SoulsFormats.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   
+  <ItemGroup>
+  <ProjectReference Include="..\SMT.Core\SMT.Core.csproj" />
+  </ItemGroup>
+
+
   <ItemGroup>
     <PackageReference Include="AdonisUI" Version="1.17.1" />
     <PackageReference Include="AdonisUI.ClassicTheme" Version="1.17.1" />
