@@ -5,7 +5,7 @@
                              xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                              PlaceTitleBarOverContent="False"
                              Title="魂友MOD翻译工具v2.0"
-                             Height="630"
+                             Height="645"
                              Width="840"
                              FontSize="14"
                              ShrinkTitleBarWhenMaximized="True">
@@ -20,19 +20,19 @@
             <StackPanel>
                 <Border Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}"/>
                 <Button Name="TranslateTab"
-                        Click="TranslateTab_OnClick"
+                        Click="ChangeTab_OnClick"
                         Height="40"
                         Content="翻译"
                         Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
                 </Button>
                 <Button Name="ToolTab"
-                        Click="TranslateTab_OnClick"
+                        Click="ChangeTab_OnClick"
                         Height="40"
                         Content="工具"
                         Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
                 </Button>
                 <Button Name="AboutTab"
-                        Click="TranslateTab_OnClick"
+                        Click="ChangeTab_OnClick"
                         Height="40"
                         Content="关于"
                         Style="{DynamicResource {x:Static adonisUi:Styles.ToolbarButton}}">
@@ -55,8 +55,9 @@
                         <ColumnDefinition Width="*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="40"></RowDefinition>
-                        <RowDefinition Height="40"></RowDefinition>
+                        <RowDefinition Height="36"></RowDefinition>
+                        <RowDefinition Height="36"></RowDefinition>
+                        <RowDefinition Height="24"></RowDefinition>
                     </Grid.RowDefinitions>
 
                     <Label Margin="2"
@@ -88,68 +89,134 @@
                               VerticalContentAlignment="Center"
                               Grid.Row="1"
                               Grid.Column="1"
-                              Grid.ColumnSpan="2"></ComboBox>
-                </Grid>
+                              Grid.ColumnSpan="1"></ComboBox>
+                    <Button Margin="2"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">刷新</Button>
 
+                    <CheckBox Name="DoNotSplitTextBox"
+                              Grid.Row="2"
+                              Grid.ColumnSpan="3"
+                              Margin="2">匹配不将文本分割为段落</CheckBox>
+                </Grid>
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
                        FontWeight="Normal">术语表</Label>
-                <CheckBox Name="UseGlossaryCheckBox"
-                          Margin="2">启用术语表（导出时使用术语表替换未翻译文本内的专有名词）</CheckBox>
-                <CheckBox Name="IgnoreCaseCheckBox"
-                          Margin="2">忽视大小写（使用术语表进行匹配时同一个字母的大小写通用）</CheckBox>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="40"></RowDefinition>
-                        <RowDefinition Height="180"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="36"></RowDefinition>
+                        <RowDefinition Height="140"></RowDefinition>
                     </Grid.RowDefinitions>
+                    <CheckBox Name="UseGlossaryCheckBox"
+                              Grid.Row="0"
+                              Grid.Column="0"
+                              Margin="2">启用术语表</CheckBox>
+                    <CheckBox Name="IgnoreCaseCheckBox"
+                              Grid.Row="0"
+                              Grid.Column="1"
+                              Margin="2">匹配时忽视大小写</CheckBox>
+
                     <Button Margin="2"
-                            Grid.Row="0"
+                            Grid.Row="1"
                             Grid.Column="0"
                             Click="GlossaryAdd_onClick">添加术语表</Button>
                     <Button Margin="2"
-                            Grid.Row="0"
+                            Grid.Row="1"
                             Grid.Column="1"
                             Click="GlossaryRemove_onClick">删除选中术语表</Button>
                     <ListBox Margin="2"
                              SelectionMode="Extended"
                              Name="GlossaryListBox"
-                             Grid.Row="1"
+                             Grid.Row="2"
                              Grid.Column="0"
                              Grid.ColumnSpan="2">
                     </ListBox>
                 </Grid>
 
+
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
                        FontWeight="Normal">生成</Label>
-                <CheckBox Name="UseExcelCheckBox"
-                          Margin="2">将未翻译文本以.xlsx格式导出（方便上传到谷歌翻译）</CheckBox>
-                <CheckBox Name="SplitCheckBox"
-                          Margin="2"
-                          Visibility="Collapsed"
-                          IsEnabled="False">未翻译文本过多（大于50K行时）时拆分为多个文件（防止谷歌翻译失败）</CheckBox>
-                <CheckBox Name="UseCompactCheckBox"
-                          Margin="2"
-                          Visibility="Collapsed"
-                          IsEnabled="False">使用压缩+索引的存储格式(导出文本较少，机翻结果更统一，但是逻辑性更弱)</CheckBox>
 
-                <CheckBox Name="AutoSortCheckBox"
-                          Margin="2"
-                          IsEnabled="True">导出时将经术语表处理后不包含ASCII字符的文本集中到一起</CheckBox>
-                <CheckBox Name="AutoRemoveSpaceCheckBox"
-                          Margin="2"
-                          IsEnabled="False">导入时自动移除中文附近的空格</CheckBox>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
 
+                    </Grid.RowDefinitions>
 
+                    <Label Grid.Row="0"
+                           Grid.Column="0">导出选项</Label>
 
+                    <CheckBox Name="UseExcelCheckBox"
+                              Grid.Row="1"
+                              Grid.Column="0"
+                              Margin="2">导出为.xlsx格式</CheckBox>
+                    <CheckBox Name="AutoSortCheckBox"
+                              Grid.Row="2"
+                              Grid.Column="0"
+                              Margin="2"
+                              IsEnabled="True">自动排序导出文本(启用术语表时有效)</CheckBox>
+                    <CheckBox Name="MarkSourceCheckBox"
+                              Grid.Row="3"
+                              Grid.Column="0"
+                              Margin="2"
+                              IsEnabled="True">在编号后注明文本所属文件(仅限txt)</CheckBox>
+                    <CheckBox Name="MarkNewLineCheckBox"
+                              Grid.Row="4"
+                              Grid.Column="0"
+                              Margin="2"
+                              IsEnabled="True">使用\n替换换行(机翻请勾选)</CheckBox>
 
+                    <Label Grid.Row="0"
+                           Grid.Column="1">翻译选项</Label>
+                    <CheckBox Name="RemoveSPace"
+                              Grid.Row="1"
+                              Grid.Column="1"
+                              Margin="2">移除中文和英文之间的空格</CheckBox>
+
+                    <CheckBox Name="ExportAsTranditional"
+                              Grid.Row="2"
+                              Grid.Column="1"
+                              IsEnabled="False"
+                              Margin="2">生成繁体语言文件</CheckBox>
+
+                    <CheckBox Name="MultiLang"
+                              Grid.Row="3"
+                              Grid.Column="1"
+                              IsEnabled="False"
+                              Margin="2">生成中英双语样式</CheckBox>
+                </Grid>
+                <!--<CheckBox Name="AutoSortCheckBox"
+                    Margin="2"
+                    IsEnabled="True">导出时将经术语表处理后不包含ASCII字符的文本集中到一起</CheckBox>
+                    <CheckBox Name="AutoRemoveSpaceCheckBox"
+                        Margin="2"
+                    IsEnabled="False">导入时自动移除中文附近的空格</CheckBox>-->
+                <!--<CheckBox Name="SplitCheckBox"
+            Margin="2"
+            Visibility="Collapsed"
+            IsEnabled="False">未翻译文本过多（大于50K行时）时拆分为多个文件（防止谷歌翻译失败）</CheckBox>
+                    <CheckBox Name="UseCompactCheckBox"
+            Margin="2"
+            Visibility="Collapsed"
+            IsEnabled="False">使用压缩+索引的存储格式(导出文本较少，机翻结果更统一，但是逻辑性更弱)</CheckBox>-->
 
                 <StackPanel Orientation="Horizontal"
                             FlowDirection="RightToLeft"
@@ -179,6 +246,10 @@
                         Height="40"
                         Name="MergeDbBtn"
                         Click="MergeDbBtn_OnClick">合并多个对照数据库（请置于同一个文件夹）</Button>
+                <Button Margin="2"
+                        Height="40"
+                        Name="DumpLangFileBtn"
+                        Click="DumpLangFile_OnClick">导出语言文件到文本文件</Button>
             </StackPanel>
             <StackPanel Name="AboutStackPanel"
                         Margin="10">
@@ -190,7 +261,7 @@
                 <TextBlock Margin="16,0"
                            TextWrapping="Wrap">
                     本软件可以导出mod新增的所有文本，并导入翻译后的新增文本以生成.msgbng.dcx的标准文本文件。可以
-                    帮助没有相关技术基础的玩家高效机翻Mod，同时也能帮助人工翻译者省去繁杂的额外步骤，专注翻于译。
+                    帮助没有相关技术基础的玩家高效机翻Mod，同时也能帮助人工翻译者省去繁杂的额外步骤，专注于翻译。
                 </TextBlock>
                 <TextBlock Margin="16,0"
                            TextWrapping="Wrap">
@@ -230,7 +301,6 @@
                     <Hyperlink NavigateUri="https://hhhxiao.github.io/SoulsModTranslator/"
                                RequestNavigate="Hyperlink_RequestNavigate">https://hhhxiao.github.io/SoulsModTranslator/</Hyperlink>
                 </TextBlock>
-
 
                 <TextBlock Margin="16,0">
                     前往Github反馈:

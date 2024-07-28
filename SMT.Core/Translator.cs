@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http.Headers;
 using NLog;
 using NPOI.SS.Formula;
 using NPOI.SS.Formula.Functions;
@@ -7,86 +8,55 @@ using SoulsFormats;
 
 namespace SMT.core;
 
+
+/**
+
+文件ID entryID
+
+textID  = 文件ID * 100000 + entryID
+globalID = textID  * 10 + ?
+
+**/
+
 public class ExportResult
 {
     public struct Item
     {
-        public long Id { get; init; }
-        public string Text { get; init; }
+        public long globalId { get; init; }
+        public string TextContent { get; init; }
+        public string FileName { get; init; }
     }
-
     public bool Success = false;
-    public List<Item> PhaseList = new();
     public List<Item> SentenceList = new();
-
-    public static readonly List<string> PhaseFileList = new()
+    public void AddSentence(long id, string text, string file)
     {
-        "ArtsName", //战技名字
-        "GemName", //战灰名字
-        "ProtectionName", //盔甲名字
-        "WeaponName" //武器名字
-    };
-
-    public void AddPhase(long id, string text)
-    {
-        PhaseList.Add(new Item { Id = id, Text = text });
-    }
-
-    public void AddSentence(long id, string text)
-    {
-        SentenceList.Add(new Item { Id = id, Text = text });
+        SentenceList.Add(new Item { globalId = id, TextContent = text, FileName = file });
     }
 }
 
-public class TextTree
+
+public class TextCache
 {
-
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    private readonly Dictionary<long, string> Sentences = new();
-    public long TextId; //文本ID (= 文件ID * 100000000 + textID)
+    public long TextId; //(= fileid  * 10000000 + entryID)
+    private readonly SortedDictionary<long, string> textList = new();
 
-    public TextTree(long textId)
+    public TextCache(long textId)
+    { TextId = textId; }
+
+    public void AddParagraphOrText(long globalId, string text)
     {
-        this.Reset(textId);
-    }
-
-    private string Get(int id, string sp)
-    {
-        if (Sentences.TryGetValue(id, out var sentence))
-            return sentence;
-
-        if (id % 10 != 0) return ""; //用\n分隔的句子，没有就是没有了
-        var tmp = new List<string>();
-        for (var i = 1; i <= 9; i++)
+        if (!textList.TryAdd(globalId - TextId * 10, text.Trim()))
         {
-            tmp.Add(Get(id == 0 ? i * 10 : id + i, "\n"));
-        }
-
-        return string.Join(sp, tmp).Trim();
-    }
-
-    public void AddSentence(long id, string sentence)
-    {
-        if (Sentences.TryGetValue(id, out var oldSentence))
-        {
-            Logger.Warn($"文本{id}内出现重复句子: {oldSentence} -> {sentence}");
-        }
-        else
-        {
-            Sentences.Add(id, sentence); //an item with same key
+            Logger.Warn($"出现重复的句子: {text}");
         }
     }
 
     public string Collect()
     {
-        return Get(0, "\n\n");
-    }
-
-
-    public void Reset(long textId)
-    {
-        Sentences.Clear();
-        TextId = textId;
+        if (textList.Count == 0) return "";
+        if (textList.ContainsKey(0)) return textList[0];
+        return string.Join("\n\n", textList.Values);
     }
 }
 
@@ -94,50 +64,52 @@ public static class Translator
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-    private static Action<string, int, string, int> CreateTraverser(DB db, Action<long, long, string> unTrans, Action<long, long, string, string> trans)
+    private static Action<string, int, string, int> CreateTraverser(
+        DB db, //db
+        bool keepAsText, //keep as text
+        Action<string, long, long, string> unTrans,  //action for untranslated text
+        Action<string, long, long, string, string> trans //action for translated text
+        )
     {
         return (string fileName, int fileId, string text, int textId) =>
         {
-            var uid = (long)fileId * LangFile.Mtid + (long)textId;
+            var globalID = (long)fileId * LangFile.Mtid + (long)textId;
             var res = db.Translate(text.Trim()); //
-            if (res.Key)
+            if (res.Key) //匹配成功
             {
-                trans(uid, uid * 100, text, res.Value);
+                trans(fileName, globalID, globalID * 10, text, res.Value);
+                return;
+            }
+            //匹配不成功
+            if (keepAsText) //不进行下一步翻译
+            {
+                unTrans(fileName, globalID, globalID * 10, text);
                 return;
             }
 
             var paraList = text.Split("\n\n");
             for (var i = 0; i < paraList.Length; i++)
             {
+                //段落ID = 文本ID + 段落序号
                 res = db.Translate(paraList[i].Trim());
                 if (res.Key)
                 {
-                    trans(uid, uid * 100 + (i + 1) * 10, paraList[i], res.Value);
-                    continue;
+                    trans(fileName, globalID, globalID * 10 + (i + 1), paraList[i], res.Value);
                 }
-
-                var sentenceList = paraList[i].Split("\n"); //翻译失败，尝试分句
-                for (var j = 0; j < sentenceList.Length; j++)
+                else
                 {
-                    res = db.Translate(sentenceList[j].Trim());
-                    if (res.Key)
-                    {
-                        trans(uid, uid * 100 + (i + 1) * 10 + j + 1, sentenceList[j], res.Value);
-                    }
-                    else
-                    {
-                        unTrans(uid, uid * 100 + (i + 1) * 10 + j + 1, sentenceList[j]);
-                    }
+                    unTrans(fileName, globalID, globalID * 10 + (i + 1), paraList[i]);
                 }
             }
         };
     }
 
-    public static ExportResult Export(string rootPath, string dbPath)
+    public static ExportResult Export(string rootPath, string dbPath, bool keepAsText)
     {
         Logger.Info($"开始导出未翻译文本");
         Logger.Info($"msg根目录：{rootPath}");
         Logger.Info($"数据库路径：{dbPath}");
+        Logger.Info($"保持原始文本不分割：{keepAsText}");
         var result = new ExportResult
         {
             Success = false
@@ -149,21 +121,30 @@ public static class Translator
             Logger.Error("无法加载语言文件或者数据库文件，导出终止");
             return result;
         }
-
         result.Success = true;
-        langFile.ForeachAllKey(CreateTraverser(db,
-            (tId, id, src) => { result.AddSentence(id, src); },
-            (tId, id, scr, dest) => { }));
+        var set = new HashSet<long>();
+        langFile.ForeachAllKey(CreateTraverser(db, keepAsText,
+            (f, textId, globalId, src) =>
+            {
+                result.AddSentence(globalId, src, f);
+                set.Add(textId);
+            },
+            (f, textId, globalId, scr, dest) =>
+            {
+                set.Add(textId);
+            }));
+        Logger.Info($"共处理 {set.Count} 段文本");
         Logger.Info("成功生成未翻译文本");
         return result;
     }
 
-    public static bool Translate(string rootPath, string dbPath, string translateFileName)
+    public static bool Translate(string rootPath, string dbPath, string translateFileName, bool keepText)
     {
         Logger.Info($"开始生成目标语言文件");
         Logger.Info($"msg根目录：{rootPath}");
         Logger.Info($"数据库路径：{dbPath}");
         Logger.Info($"翻译文件路径：{translateFileName}");
+        Logger.Info($"保持原始文本不分割：{keepText}");
         var langFile = new LangFile();
         var db = new DB();
         if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
@@ -173,38 +154,26 @@ public static class Translator
         }
 
         var translated = TextImporter.Import(translateFileName);
-        var textDict = new Dictionary<long, string>();
-        var tree = new TextTree(-1);
+        var translateCache = new Dictionary<long, TextCache>();
         Logger.Info("已成功加载翻译文件");
-        langFile.ForeachAllKey(CreateTraverser(db,
-            (uid, sentenceId, src) =>
+        langFile.ForeachAllKey(CreateTraverser(db, keepText,
+            (fileName, textId, globalId, src) =>
             {
-                if (!translated.ContainsKey(sentenceId))
+                if (!translated.ContainsKey(globalId))
                 {
                     Logger.Error($"无法翻译文本: {src}");
                 }
-
-                var dest = translated.GetValueOrDefault(sentenceId, src);
-                if (uid != tree.TextId)
-                {
-                    //id不一样，缓存并创建一个新的
-                    textDict.TryAdd(tree.TextId, tree.Collect());
-                    tree.Reset(uid);
-                }
-
-                tree.AddSentence(sentenceId % (uid * 100), dest);
+                var dest = translated.GetValueOrDefault(globalId, src); //尝试翻译
+                translateCache.TryAdd(textId, new TextCache(textId));
+                translateCache[textId].AddParagraphOrText(globalId, dest);
             }, //
-            (uid, sentenceId, scr, dest) =>
+            (f, textId, globalId, scr, dest) =>
             {
-                if (uid != tree.TextId)
-                {
-                    textDict.TryAdd(tree.TextId, tree.Collect());
-                    tree.Reset(uid);
-                }
-
-                tree.AddSentence(sentenceId % (uid * 100), dest);
+                translateCache.TryAdd(textId, new TextCache(textId));
+                translateCache[textId].AddParagraphOrText(globalId, dest);
             }));
-        Logger.Info($"共翻译 {textDict.Count} 段文本");
+        Logger.Info($"共处理 {translateCache.Count} 段文本");
+
         var zhocnPath = Path.Combine(rootPath, Configuration.DestLangPath);
         foreach (var bnd in langFile.Bnds)
         {
@@ -221,20 +190,18 @@ public static class Translator
                 foreach (var entry in fmg.Entries)
                 {
                     if (entry.Text == null) continue;
-                    if (textDict.TryGetValue(file.ID * LangFile.Mtid + entry.ID, out var dest))
+                    if (translateCache.TryGetValue(file.ID * LangFile.Mtid + entry.ID, out var dest))
                     {
-                        entry.Text = dest;
+                        entry.Text = dest.Collect();
                     }
                     else
                     {
                         Logger.Warn($"缺失文本翻译: {entry.ID}->{entry.Text}");
                     }
                 }
-
                 file.Bytes = fmg.Write();
             }
         }
-
         Logger.Info("尝试备份原有的语言文件");
         Utils.BackupFileOrDir(zhocnPath);
         Directory.CreateDirectory(zhocnPath);

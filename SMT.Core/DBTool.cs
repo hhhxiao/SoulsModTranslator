@@ -20,6 +20,7 @@ public static class DbTool
 
     private static void TrySplitKv(string src, string dest, string sp, Dictionary<string, string> kv)
     {
+        kv.TryAdd(src, dest);
         var srcParagraphList = src.Split(sp);
         var destParagraphList = dest.Split(sp); //切分
         if (srcParagraphList.Length == 1 || destParagraphList.Length == 1) return; //只有一句，直接返回
@@ -28,7 +29,8 @@ public static class DbTool
         {
             //每一段一一对应
             kv.TryAdd(srcParagraphList[i].Trim(), destParagraphList[i].Trim());
-            TrySplitKv(srcParagraphList[i], destParagraphList[i], "\n", kv); //以句子为单位再递归一遍
+            //删除按句分
+            // TrySplitKv(srcParagraphList[i], destParagraphList[i], "\n", kv); //以句子为单位再递归一遍
         }
     }
 
@@ -50,7 +52,6 @@ public static class DbTool
         {
             if (!destDict.TryGetValue(key, out var destValue)) continue;
             if ((srcValue is "[ERROR]" or "%null") || (destValue is "[ERROR]" or "%null")) continue;
-            dbDict.TryAdd(srcValue.Trim(), destValue.Trim()); //add full
             TrySplitKv(srcValue, destValue, "\n\n", dbDict);
         }
 
@@ -58,7 +59,6 @@ public static class DbTool
         Logger.Info($"已生成对照数据库：{savePath}");
         return true;
     }
-
 
     public static bool MergeDB(string[] fileNames, string savePath)
     {
@@ -68,17 +68,13 @@ public static class DbTool
         foreach (var file in fileNames)
         {
             var db = Utils.LoadJsonToMap(file);
-            Logger.Info($" - 文件：{file}: 大小：{db.Count}");
+            Logger.Info($" - 文件：{file}: 对照文本条数：{db.Count}");
             count += db.Count;
             foreach (var kv in db)
             {
-                if (!newDB.ContainsKey(kv.Key))
-                {
-                    newDB.Add(kv.Key, kv.Value);
-                }
+                newDB.TryAdd(kv.Key, kv.Value);
             }
         }
-
         Logger.Info($"新数据库的大小：{count}->{newDB.Count}");
         Utils.SaveMapAsJson(newDB, savePath);
         return true;

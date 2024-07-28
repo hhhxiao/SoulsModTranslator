@@ -36,7 +36,7 @@ namespace SMT.WPF
                 return;
             }
 
-            var log = String.Join(Environment.NewLine, MemoryTarget.Logs.ToArray());
+            var log = String.Join("\n", MemoryTarget.Logs.ToArray());
             var messageBox = new MessageBoxModel
             {
                 Text = failMsg + "\n\n" + log,
@@ -116,6 +116,8 @@ namespace SMT.WPF
 
         private List<string> DbList { get; set; }
 
+
+        //初始化
         public MainWindow()
         {
 
@@ -141,6 +143,20 @@ namespace SMT.WPF
             this.Close();
         }
 
+        //切换Tab
+        private void ChangeTab_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                SwitchTab(btn.Name.Replace("Tab", ""));
+            }
+        }
+
+
+
+
+
+        //MAIN
         private void SelectPathButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
@@ -149,61 +165,6 @@ namespace SMT.WPF
                 ModPathTextBox.Text = dialog.SelectedPath;
         }
 
-        //导出数据库
-        private async void ExportDbBtn_OnClick(object sender, RoutedEventArgs e)
-        {
-            var keyPath = "";
-            var valuePath = "";
-            var savePath = "";
-            var keyDialog = new FolderBrowserDialog();
-            keyDialog.Description = "选择源语言路径(engus)";
-            var valueDialog = new FolderBrowserDialog();
-            valueDialog.Description = "选择目标语言路径(zhocn)";
-            var saveDialog = new SaveFileDialog();
-            saveDialog.Filter = "Json文件(*.json)|*";
-            saveDialog.FileName = "Untitled.json";
-            var keyResult = keyDialog.ShowDialog();
-            if (keyResult != System.Windows.Forms.DialogResult.OK) return;
-            var valueResult = valueDialog.ShowDialog();
-            if (valueResult != System.Windows.Forms.DialogResult.OK) return;
-            var saveResult = saveDialog.ShowDialog();
-            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
-            valuePath = valueDialog.SelectedPath;
-            keyPath = keyDialog.SelectedPath;
-            savePath = saveDialog.FileName;
-            var res = await Task.Run(() => DbTool.CreateDb(keyPath, valuePath, savePath));
-            ShowTaskResult(res, "导出成功", "导出失败");
-
-        }
-
-        private async void MergeDbBtn_OnClick(object sender, RoutedEventArgs e)
-        {
-            var dialog = new System.Windows.Forms.OpenFileDialog();
-            dialog.InitialDirectory = DbPath;
-            dialog.Filter = "Json 文件 (*.json)|*.json|所有文件|*.*";
-            dialog.Multiselect = true;
-            var result = dialog.ShowDialog();
-            if (result != System.Windows.Forms.DialogResult.OK) return;
-            //save path
-            var savePath = "";
-            var saveDialog = new SaveFileDialog
-            {
-                Filter = "Json文件(*.json)|*",
-                FileName = "Untitled.json"
-            };
-            var saveResult = saveDialog.ShowDialog();
-            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
-            savePath = saveDialog.FileName;
-            var res = await Task.Run(() => DbTool.MergeDB(dialog.FileNames, savePath));
-            ShowTaskResult(res, "合并成功", "合并失败");
-        }
-        private void TranslateTab_OnClick(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn)
-            {
-                SwitchTab(btn.Name.Replace("Tab", ""));
-            }
-        }
 
         private void GlossaryAdd_onClick(object sender, RoutedEventArgs e)
         {
@@ -236,35 +197,15 @@ namespace SMT.WPF
         }
 
 
-        //生成新的文本文件
-        private async void GenerateBtn_onClick(object sender, RoutedEventArgs e)
-        {
-            var modRootPath = ModPathTextBox.Text;
-            var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
-            if (modRootPath.Length == 0)
-            {
-                ShowTaskResult(false, "", "请先设置msg目录");
-                return;
-            }
 
-            if (dbPath.Length == 0)
-            {
-                ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
-                return;
-            }
-
-            var dialog = new OpenFileDialog();
-            dialog.Filter = "Excel 文件 (*.xlsx)|*.xlsx|文本文件 (*.txt)|*.txt";
-            if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-            var res = await Task.Run(() => Translator.Translate(modRootPath, dbPath, dialog.FileName));
-            ShowTaskResult(res, "生成成功", "生成失败");
-        }
 
         //导出未翻译文本
         private async void ExportBtn_onClick(object sender, RoutedEventArgs e)
         {
             var modRootPath = ModPathTextBox.Text;
             var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
+            var keepText = DoNotSplitTextBox.IsChecked ?? false;
+            var replaceNewLine = MarkNewLineCheckBox.IsChecked ?? false;
             if (modRootPath.Length == 0)
             {
                 ShowTaskResult(false, "", "请先设置msg目录");
@@ -278,7 +219,8 @@ namespace SMT.WPF
             }
 
             //导出未翻译文本
-            var res = await Task.Run(() => Translator.Export(modRootPath, dbPath));
+            var res = await Task.Run(() => Translator.Export(modRootPath, dbPath, keepText));
+
             if (!res.Success)
             {
                 ShowTaskResult(false, "", "导出失败");
@@ -302,15 +244,127 @@ namespace SMT.WPF
             //写入磁盘
             var exportAsExcel = UseExcelCheckBox.IsChecked ?? false;
             var resort = AutoSortCheckBox.IsChecked ?? false;
-            var dialog = new SaveFileDialog();
-            dialog.Filter = exportAsExcel ? "Excel表格文件(*.xlsx)|*" : "文本文件(*.txt)|*";
-            dialog.FileName = exportAsExcel ? "text.xlsx" : "text.txt";
+            var markSource = MarkSourceCheckBox.IsChecked ?? false;
+
+            var dialog = new SaveFileDialog
+            {
+                Filter = exportAsExcel ? "Excel表格文件(*.xlsx)|*" : "文本文件(*.txt)|*",
+                FileName = exportAsExcel ? "text.xlsx" : "text.txt"
+            };
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-            var result = await Task.Run(() => TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, false));
+            var result = await Task.Run(() => TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, markSource, replaceNewLine, false));
             Logger.Info($"成功导出未翻译文本：{dialog.FileName}");
             ShowTaskResult(result, "导出成功", "导出失败");
         }
 
+
+        //生成新的文本文件
+        private async void GenerateBtn_onClick(object sender, RoutedEventArgs e)
+        {
+            var modRootPath = ModPathTextBox.Text;
+            var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
+            var keepText = DoNotSplitTextBox.IsChecked ?? false;
+            if (modRootPath.Length == 0)
+            {
+                ShowTaskResult(false, "", "请先设置msg目录");
+                return;
+            }
+
+            if (dbPath.Length == 0)
+            {
+                ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
+                return;
+            }
+
+            var dialog = new OpenFileDialog();
+            dialog.Filter = "Excel 文件 (*.xlsx)|*.xlsx|文本文件 (*.txt)|*.txt";
+            if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            var res = await Task.Run(() => Translator.Translate(modRootPath, dbPath, dialog.FileName, keepText));
+            ShowTaskResult(res, "生成成功", "生成失败");
+        }
+        //TOOLS
+        private async void ExportDbBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            var keyPath = "";
+            var valuePath = "";
+            var savePath = "";
+            var keyDialog = new FolderBrowserDialog
+            {
+                Description = "选择源语言路径(engus)"
+            };
+            var valueDialog = new FolderBrowserDialog
+            {
+                Description = "选择目标语言路径(zhocn)"
+            };
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "Json文件(*.json)|*",
+                FileName = "Untitled.json"
+            };
+
+            var keyResult = keyDialog.ShowDialog();
+            if (keyResult != System.Windows.Forms.DialogResult.OK) return;
+            var valueResult = valueDialog.ShowDialog();
+            if (valueResult != System.Windows.Forms.DialogResult.OK) return;
+            var saveResult = saveDialog.ShowDialog();
+            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
+            valuePath = valueDialog.SelectedPath;
+            keyPath = keyDialog.SelectedPath;
+            savePath = saveDialog.FileName;
+            var res = await Task.Run(() => DbTool.CreateDb(keyPath, valuePath, savePath));
+            ShowTaskResult(res, "导出成功", "导出失败");
+
+        }
+
+        private async void MergeDbBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.OpenFileDialog
+            {
+                InitialDirectory = DbPath,
+                Filter = "Json 文件 (*.json)|*.json|所有文件|*.*",
+                Multiselect = true
+            };
+            var result = dialog.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK) return;
+            //save path
+            var savePath = "";
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "Json文件(*.json)|*",
+                FileName = "Untitled.json"
+            };
+            var saveResult = saveDialog.ShowDialog();
+            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
+            savePath = saveDialog.FileName;
+            var res = await Task.Run(() => DbTool.MergeDB(dialog.FileNames, savePath));
+            ShowTaskResult(res, "合并成功", "合并失败");
+        }
+
+        public async void DumpLangFile_OnClick(object sender, RoutedEventArgs e)
+        {
+
+            var inputPath = "";
+            var outputPath = "";
+            var inputDialog = new FolderBrowserDialog
+            {
+                Description = "选择源语言路径(engus，zhocn等)"
+            };
+            var outputDialog = new FolderBrowserDialog
+            {
+                Description = "选择导出目录"
+            };
+            var inputResult = inputDialog.ShowDialog();
+            if (inputResult != System.Windows.Forms.DialogResult.OK) return;
+            var outputResult = outputDialog.ShowDialog();
+            if (outputResult != System.Windows.Forms.DialogResult.OK) return;
+            inputPath = inputDialog.SelectedPath;
+            outputPath = outputDialog.SelectedPath;
+
+            var res = await Task.Run(() => LangFile.Dump(inputPath, outputPath));
+            ShowTaskResult(res, "导出成功", "导出失败");
+        }
+
+        //About
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             try

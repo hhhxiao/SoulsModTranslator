@@ -29,7 +29,7 @@ public class TextImporter
                     var text = curRow.GetCell(1).StringCellValue.Trim();
                     if (!result.ContainsKey((long)id))
                     {
-                        result.Add((long)id, text);
+                        result.Add((long)id, text.Replace("[@]", "\n"));
                     }
                 }
             }
@@ -46,20 +46,39 @@ public class TextImporter
     {
         var res = new Dictionary<long, string>();
         var list = File.ReadLines(fileName).ToList();
-        foreach (var line in list)
+        list.Add("[0]");
+        try
         {
-            try
+            List<string> buffer = new List<string>();
+            foreach (var rawLine in list)
             {
-                var sp = line.Split("||");
-                var id = Convert.ToInt64(sp[0]);
-                res.Add(id, sp[1]);
-            }
-            catch (Exception)
-            {
-                Logger.Error($"Invalid Translated line: {line}");
+                var line = rawLine.Trim();
+                if (line.StartsWith("|") && line.EndsWith("|"))
+                {
+                    string idStr = line;
+                    if (line.Contains(","))
+                    {
+                        idStr = line.Trim().Split(",")[0];
+                    }
+                    var id = Convert.ToInt64(idStr.Replace("|", ""));
+                    if (id != 0)
+                    {
+                        var text = string.Join("\n", buffer);
+                        buffer.Clear();
+                        res.Add(id, text.Replace("[@]", "\n"));
+                    }
+                }
+                else
+                {
+                    buffer.Add(line);
+                }
             }
         }
-
+        catch (Exception e)
+        {
+            Logger.Error($"读取文本时出现错误: {e.Message}");
+        }
+        Logger.Info($"共读取到{res.Count}条文本");
         return res;
     }
 

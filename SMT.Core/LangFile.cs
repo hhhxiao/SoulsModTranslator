@@ -6,7 +6,7 @@ namespace SMT.core;
 public class LangFile
 {
     private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    public const long Mtid = 1000000000;
+    public const long Mtid = 100000000;
 
     public static readonly List<string> BlackFileList = new()
     {
@@ -95,5 +95,34 @@ public class LangFile
         }
     }
 
+    public static bool Dump(string input, string output)
+    {
+        LangFile file = new LangFile();
+        if (!file.Load(input))
+        {
+            return false;
+        }
 
+        //makedir
+        foreach (var (bndName, bnd) in file.Bnds)
+        {
+            var bndPath = Path.Combine(output, bndName.Replace(".msgbnd.dcx", ""));
+            Directory.CreateDirectory(bndPath);
+            foreach (var f in bnd.Files)
+            {
+                var fmg = FMG.Read(f.Bytes);
+                var str = "";
+                foreach (var entry in fmg.Entries)
+                {
+                    if (entry.Text != null)
+                    {
+                        str += $"[{entry.ID}]\n{entry.Text}\n";
+                    }
+                }
+                File.WriteAllText(Path.Combine(bndPath, Path.GetFileNameWithoutExtension(f.Name) + ".txt"), str);
+            }
+        }
+        return true;
+    }
 }
+

@@ -132,14 +132,9 @@ public class Glossary
     public ExportResult Process(ExportResult result)
     {
         var res = new ExportResult();
-        foreach (var item in result.PhaseList)
-        {
-            res.AddPhase(item.Id, ProcessOne(item.Text));
-        }
-
         foreach (var item in result.SentenceList)
         {
-            res.AddSentence(item.Id, ProcessOne(item.Text));
+            res.AddSentence(item.globalId, ProcessOne(item.TextContent), item.FileName);
         }
         return res;
     }
