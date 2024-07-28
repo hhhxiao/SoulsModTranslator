@@ -19,7 +19,7 @@ namespace SMT.WPF
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.8";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.10";
 
         private static MemoryTarget MemoryTarget = new MemoryTarget
         {
@@ -217,10 +217,8 @@ namespace SMT.WPF
                 ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
                 return;
             }
-
             //导出未翻译文本
             var res = await Task.Run(() => Translator.Export(modRootPath, dbPath, keepText));
-
             if (!res.Success)
             {
                 ShowTaskResult(false, "", "导出失败");
@@ -264,6 +262,9 @@ namespace SMT.WPF
             var modRootPath = ModPathTextBox.Text;
             var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
             var keepText = DoNotSplitTextBox.IsChecked ?? false;
+            var multiLang = MultiLangCheckBox.IsChecked ?? false;
+            var useTrand = ExportAsTranditionalCheckBox.IsChecked ?? false;
+
             if (modRootPath.Length == 0)
             {
                 ShowTaskResult(false, "", "请先设置msg目录");
@@ -279,7 +280,8 @@ namespace SMT.WPF
             var dialog = new OpenFileDialog();
             dialog.Filter = "Excel 文件 (*.xlsx)|*.xlsx|文本文件 (*.txt)|*.txt";
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-            var res = await Task.Run(() => Translator.Translate(modRootPath, dbPath, dialog.FileName, keepText));
+
+            var res = await Task.Run(() => Translator.Translate(modRootPath, dbPath, dialog.FileName, keepText, multiLang, useTrand));
             ShowTaskResult(res, "生成成功", "生成失败");
         }
         //TOOLS

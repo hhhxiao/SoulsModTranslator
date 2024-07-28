@@ -138,13 +138,20 @@ public static class Translator
         return result;
     }
 
-    public static bool Translate(string rootPath, string dbPath, string translateFileName, bool keepText)
+    public static bool Translate(string rootPath, string dbPath,
+    string translateFileName,
+    bool keepText,
+    bool multiLang,
+    bool useTrand
+    )
     {
         Logger.Info($"开始生成目标语言文件");
         Logger.Info($"msg根目录：{rootPath}");
         Logger.Info($"数据库路径：{dbPath}");
         Logger.Info($"翻译文件路径：{translateFileName}");
-        Logger.Info($"保持原始文本不分割：{keepText}");
+        Logger.Info($"导出为繁体：{useTrand}");
+        // Logger.Info($"保持原始文本不分割：{keepText}");
+        Logger.Info($"双语模式：{multiLang}");
         var langFile = new LangFile();
         var db = new DB();
         if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
@@ -173,7 +180,14 @@ public static class Translator
                 translateCache[textId].AddParagraphOrText(globalId, dest);
             }));
         Logger.Info($"共处理 {translateCache.Count} 段文本");
-
+        // if (useTrand)
+        // {
+        //     Configuration.UpdateDestLang("zhocn", "zhoCN");
+        // }
+        // else
+        // {
+        //     Configuration.UpdateDestLang("zhotw", "zhoTW");
+        // }
         var zhocnPath = Path.Combine(rootPath, Configuration.DestLangPath);
         foreach (var bnd in langFile.Bnds)
         {
@@ -192,7 +206,14 @@ public static class Translator
                     if (entry.Text == null) continue;
                     if (translateCache.TryGetValue(file.ID * LangFile.Mtid + entry.ID, out var dest))
                     {
-                        entry.Text = dest.Collect();
+                        if (multiLang)
+                        {
+                            entry.Text = dest.Collect() + "\n" + entry.Text;
+                        }
+                        else
+                        {
+                            entry.Text = dest.Collect();
+                        }
                     }
                     else
                     {

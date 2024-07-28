@@ -191,16 +191,15 @@
                               Grid.Column="1"
                               Margin="2">移除中文和英文之间的空格</CheckBox>
 
-                    <CheckBox Name="ExportAsTranditional"
+                    <CheckBox Name="ExportAsTranditionalCheckBox"
                               Grid.Row="2"
                               Grid.Column="1"
                               IsEnabled="False"
                               Margin="2">生成繁体语言文件</CheckBox>
 
-                    <CheckBox Name="MultiLang"
+                    <CheckBox Name="MultiLangCheckBox"
                               Grid.Row="3"
                               Grid.Column="1"
-                              IsEnabled="False"
                               Margin="2">生成中英双语样式</CheckBox>
                 </Grid>
                 <!--<CheckBox Name="AutoSortCheckBox"
