@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+    
+  <ItemGroup>
+  <ProjectReference Include="..\SMT.Core\SMT.Core.csproj" />
+  </ItemGroup>
+
+
+   <ItemGroup>
+    <Reference Include="SoulsFormats">
+      <HintPath>..\SMT.Core\SoulsFormats.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+   </ItemGroup>
+
+</Project>
