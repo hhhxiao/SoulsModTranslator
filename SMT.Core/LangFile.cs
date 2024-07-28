@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO;
-using NLog;
+﻿using NLog;
 using SoulsFormats;
 
 namespace SMT.core;
@@ -15,9 +13,6 @@ public class LangFile
         "ToS_win64", //用户协议相关
         "TextEmbedImageName_win64", //键位相关
     };
-
-    public BND4? ItemBnd { get; private set; }
-    public BND4? MenuBnd { get; private set; }
 
     public Dictionary<string, BND4> Bnds = new();
 
@@ -38,7 +33,6 @@ public class LangFile
             if (!bndFile.Name.EndsWith(".msgbnd.dcx")) continue;
             Logger.Info($"发现msgbnd.dcx文件: {bndFile.Name}");
             if (bndFile.Name == "ngword.msgbnd.dcx") continue; //跳过这个ng单词
-
             try
             {
                 var bnd = BND4.Read(Path.Combine(langRootPath, bndFile.Name));
@@ -100,4 +94,6 @@ public class LangFile
             }
         }
     }
+
+
 }
