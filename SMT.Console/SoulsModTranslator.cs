@@ -1,32 +1,18 @@
 ﻿namespace SMT.Console;
-using CommandLine;
+using System.IO;
+using SMT.core;
 
 public class SoulsModTranslator
 {
 
 
-
-
-
     static int Main(string[] args)
     {
-        return CommandLine.Parser.Default.ParseArguments<DumpOptions, DbOptions>(args).MapResult(
-            (DumpOptions options) => DumpOptions.Executor(options),
-            (DbOptions options) => DbOptions.Executor(options),
-            errs => 1
-        );
-
+        var db = new DataBase();
+        db.Load(@"C:\Users\xhy\dev\SoulsModTranslator\SMT.WPF\db\eldenring.json");
+        db.Save(@"C:\Users\xhy\dev\SoulsModTranslator\SMT.WPF\db\eldenring_save.json");
+        return 0;
     }
-    static void RunOptions(Options opts)
-    {
-        //handle options
-    }
-
-    static void HandleParseError(IEnumerable<Error> errs)
-    {
-        //handle errors
-    }
-
 }
 
 

@@ -97,7 +97,7 @@ public class LangFile
 
     public static bool Dump(string input, string output)
     {
-        LangFile file = new LangFile();
+        var file = new LangFile();
         if (!file.Load(input))
         {
             return false;

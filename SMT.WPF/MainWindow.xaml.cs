@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Windows.Navigation;
 using NLog.Targets;
 using SMT.core;
+using Microsoft.VisualBasic.Logging;
 
 namespace SMT.WPF
 {
@@ -32,7 +33,7 @@ namespace SMT.WPF
             if (success)
             {
                 AdonisUI.Controls.MessageBox.Show(success ? succMsg : failMsg, "提示",
-                AdonisUI.Controls.MessageBoxButton.OK, MessageBoxImage.Information);
+                    AdonisUI.Controls.MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -43,12 +44,12 @@ namespace SMT.WPF
                 Caption = "错误",
                 Icon = MessageBoxImage.Information,
                 Buttons =
-                new[]
-                {
-                AdonisUI.Controls.MessageBoxButtons.Custom("复制日志并前往Github反馈", "github"),
-                AdonisUI.Controls.MessageBoxButtons.Custom("复制日志并前往b站反馈", "bilibili"),
-                AdonisUI.Controls.MessageBoxButtons.Custom("关闭", "close"),
-                },
+                    new[]
+                    {
+                        AdonisUI.Controls.MessageBoxButtons.Custom("复制日志并前往Github反馈", "github"),
+                        AdonisUI.Controls.MessageBoxButtons.Custom("复制日志并前往b站反馈", "bilibili"),
+                        AdonisUI.Controls.MessageBoxButtons.Custom("关闭", "close"),
+                    },
             };
             var result = AdonisUI.Controls.MessageBox.Show(messageBox);
             if (messageBox.Result == AdonisUI.Controls.MessageBoxResult.Custom)
@@ -58,14 +59,12 @@ namespace SMT.WPF
                 if (messageBox.ButtonPressed.Id.ToString() == "github")
                 {
                     System.Windows.Clipboard.SetText(prompt + "```\n" + text + "\n```");
-                    Utils.OpenURL("https://github.com/hhhxiao/SoulsModTranslator/issues/new");
+                    Utils.OpenUrl("https://github.com/hhhxiao/SoulsModTranslator/issues/new");
                 }
                 else if (messageBox.ButtonPressed.Id.ToString() == "bilibili")
                 {
-
                     System.Windows.Clipboard.SetText(prompt + text);
-                    Utils.OpenURL("https://www.bilibili.com/video/BV17p421Q7qJ/");
-
+                    Utils.OpenUrl("https://www.bilibili.com/video/BV17p421Q7qJ/");
                 }
             }
 
@@ -81,7 +80,8 @@ namespace SMT.WPF
             }
 
             var files = Directory.GetFiles(DbPath);
-            return (from file in files where Path.GetExtension(file).Equals(".json") select Path.GetFileName(file)).ToList();
+            return (from file in files where Path.GetExtension(file).Equals(".json") select Path.GetFileName(file))
+                .ToList();
         }
 
         public void CreateArrayLogger()
@@ -120,7 +120,6 @@ namespace SMT.WPF
         //初始化
         public MainWindow()
         {
-
             Logger.Info("\n\n===========================New Instance===================================");
             CreateArrayLogger();
             Logger.Info(SoftwareName);
@@ -151,9 +150,6 @@ namespace SMT.WPF
                 SwitchTab(btn.Name.Replace("Tab", ""));
             }
         }
-
-
-
 
 
         //MAIN
@@ -188,15 +184,11 @@ namespace SMT.WPF
         private void GlossaryRemove_onClick(object sender, RoutedEventArgs e)
         {
             var selectedItems = GlossaryListBox.SelectedItems.Cast<string>().ToList();
-
-            // 遍历选中的项，从ObservableCollection中移除
             foreach (var selectedItem in selectedItems)
             {
                 Glossaries.Remove(selectedItem);
             }
         }
-
-
 
 
         //导出未翻译文本
@@ -217,6 +209,7 @@ namespace SMT.WPF
                 ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
                 return;
             }
+
             //导出未翻译文本
             var res = await Task.Run(() => Translator.Export(modRootPath, dbPath, keepText));
             if (!res.Success)
@@ -239,6 +232,7 @@ namespace SMT.WPF
                     res = glossary.Process(res);
                 }
             }
+
             //写入磁盘
             var exportAsExcel = UseExcelCheckBox.IsChecked ?? false;
             var resort = AutoSortCheckBox.IsChecked ?? false;
@@ -250,7 +244,8 @@ namespace SMT.WPF
                 FileName = exportAsExcel ? "text.xlsx" : "text.txt"
             };
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
-            var result = await Task.Run(() => TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, markSource, replaceNewLine, false));
+            var result = await Task.Run(() =>
+                TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, markSource, replaceNewLine, false));
             Logger.Info($"成功导出未翻译文本：{dialog.FileName}");
             ShowTaskResult(result, "导出成功", "导出失败");
         }
@@ -281,9 +276,11 @@ namespace SMT.WPF
             dialog.Filter = "Excel 文件 (*.xlsx)|*.xlsx|文本文件 (*.txt)|*.txt";
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
 
-            var res = await Task.Run(() => Translator.Translate(modRootPath, dbPath, dialog.FileName, keepText, multiLang, useTrand));
+            var res = await Task.Run(() =>
+                Translator.Translate(modRootPath, dbPath, dialog.FileName, keepText, multiLang, useTrand));
             ShowTaskResult(res, "生成成功", "生成失败");
         }
+
         //TOOLS
         private async void ExportDbBtn_OnClick(object sender, RoutedEventArgs e)
         {
@@ -313,9 +310,8 @@ namespace SMT.WPF
             valuePath = valueDialog.SelectedPath;
             keyPath = keyDialog.SelectedPath;
             savePath = saveDialog.FileName;
-            var res = await Task.Run(() => DbTool.CreateDb(keyPath, valuePath, savePath));
+            var res = await Task.Run(() => DataBase.CreateDb(keyPath, valuePath, savePath));
             ShowTaskResult(res, "导出成功", "导出失败");
-
         }
 
         private async void MergeDbBtn_OnClick(object sender, RoutedEventArgs e)
@@ -338,13 +334,12 @@ namespace SMT.WPF
             var saveResult = saveDialog.ShowDialog();
             if (saveResult != System.Windows.Forms.DialogResult.OK) return;
             savePath = saveDialog.FileName;
-            var res = await Task.Run(() => DbTool.MergeDB(dialog.FileNames, savePath));
+            var res = await Task.Run(() => DataBase.MergeDataBase(dialog.FileNames, savePath));
             ShowTaskResult(res, "合并成功", "合并失败");
         }
 
-        public async void DumpLangFile_OnClick(object sender, RoutedEventArgs e)
+        private async void DumpLangFile_OnClick(object sender, RoutedEventArgs e)
         {
-
             var inputPath = "";
             var outputPath = "";
             var inputDialog = new FolderBrowserDialog

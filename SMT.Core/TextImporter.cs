@@ -2,7 +2,7 @@
 
 namespace SMT.core;
 
-public class TextImporter
+public static class TextImporter
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -60,6 +60,7 @@ public class TextImporter
                     {
                         idStr = line.Trim().Split(",")[0];
                     }
+
                     var id = Convert.ToInt64(idStr.Replace("|", ""));
                     if (id != 0)
                     {
@@ -78,6 +79,7 @@ public class TextImporter
         {
             Logger.Error($"读取文本时出现错误: {e.Message}");
         }
+
         Logger.Info($"共读取到{res.Count}条文本");
         return res;
     }
