@@ -74,7 +74,7 @@ public static class Translator
         return (string fileName, int fileId, string text, int textId) =>
         {
             var globalId = (long)fileId * LangFile.Mtid + (long)textId;
-            var res = dataBase.Translate(text.Trim()); //
+            var res = dataBase.Translate(text.Trim(), textId); //
             if (res.Key) //匹配成功
             {
                 trans(fileName, globalId, globalId * 10, text, res.Value);
@@ -92,7 +92,7 @@ public static class Translator
             for (var i = 0; i < paraList.Length; i++)
             {
                 //段落ID = 文本ID + 段落序号
-                res = dataBase.Translate(paraList[i].Trim());
+                res = dataBase.Translate(paraList[i].Trim(), textId);
                 if (res.Key)
                 {
                     trans(fileName, globalId, globalId * 10 + (i + 1), paraList[i], res.Value);

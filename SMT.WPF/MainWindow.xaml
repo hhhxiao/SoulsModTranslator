@@ -237,18 +237,63 @@
 
             <StackPanel Name="ToolStackPanel"
                         Margin="10">
+                 <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                    </Grid.RowDefinitions>
+<!-- 数据库工具 -->
+                <Label Margin="8"
+                       Grid.Row = "0"
+                       VerticalContentAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Normal">数据库工具</Label>
                 <Button Margin="2"
+                        Grid.Row = "1"
+                        Grid.Column = "0"
                         Height="40"
                         Name="ExportDbBtn"
                         Click="ExportDbBtn_OnClick">从原版文本或已有翻译中导出对照数据库</Button>
                 <Button Margin="2"
                         Height="40"
+                        Grid.Row = "1"
+                        Grid.Column = "1"
                         Name="MergeDbBtn"
                         Click="MergeDbBtn_OnClick">合并多个对照数据库（请置于同一个文件夹）</Button>
                 <Button Margin="2"
                         Height="40"
+                        Grid.Row = "2"
                         Name="DumpLangFileBtn"
                         Click="DumpLangFile_OnClick">导出语言文件到文本文件</Button>
+<!-- 语言工具 -->
+                 <Label Margin="8"
+                        Grid.Row = "3"
+                        VerticalContentAlignment="Center"
+                        FontSize="20"
+                        FontWeight="Normal">语言工具</Label>
+                <Button Margin="2"
+                        Height="40"
+                        Grid.Row = "4"
+                        Grid.Column = "0"
+                        Name="CN2TWBtn"
+                        >简中语言文件转繁中</Button>
+                <Button Margin="2"
+                        Height="40"
+                        Grid.Row = "4"
+                        Grid.Column = "1"
+                        Name="TW2CNBtn"
+                        >繁中语言文件转简中</Button>
+                </Grid>
+            
+        
             </StackPanel>
             <StackPanel Name="AboutStackPanel"
                         Margin="10">
