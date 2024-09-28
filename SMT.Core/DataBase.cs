@@ -2,6 +2,7 @@ using System.Text.Json;
 
 namespace SMT.core;
 
+//添加和查询时都会删除前后空白字符
 public class DataBase
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -41,6 +42,8 @@ public class DataBase
 
     public void AddKey(string srcText, string destText, int refId)
     {
+        srcText = srcText.Trim();
+        destText = destText.Trim();
         if (!_dbData.TryGetValue(srcText, out Dictionary<int, string>? value))
         {
             var key = new Dictionary<int, string> { { refId, destText } };
@@ -104,6 +107,7 @@ public class DataBase
 
     public KeyValuePair<bool, string> Translate(string key, int refId = -1)
     {
+        key = key.Trim();
         //inline
         if (key == "[ERROR]") return new KeyValuePair<bool, string>(true, "[ERROR]");
         if (_dbData.TryGetValue(key, out var item))

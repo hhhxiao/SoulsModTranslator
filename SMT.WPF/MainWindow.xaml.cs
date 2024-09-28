@@ -71,19 +71,6 @@ namespace SMT.WPF
             MemoryTarget.Logs.Clear();
         }
 
-        private static List<string> LoadDbFiles()
-        {
-            Logger.Info($"数据库根目录：{DbPath}");
-            if (!Directory.Exists(DbPath))
-            {
-                return new List<string>();
-            }
-
-            var files = Directory.GetFiles(DbPath);
-            return (from file in files where Path.GetExtension(file).Equals(".json") select Path.GetFileName(file))
-                .ToList();
-        }
-
         public void CreateArrayLogger()
         {
             var config = LogManager.Configuration;
@@ -114,8 +101,7 @@ namespace SMT.WPF
 
         private ObservableCollection<string> Glossaries { get; set; }
 
-        private List<string> DbList { get; set; }
-
+        private List<string> DbList = new List<string>();
 
         //初始化
         public MainWindow()
@@ -127,11 +113,7 @@ namespace SMT.WPF
             //
             Glossaries = new ObservableCollection<string>();
             GlossaryListBox.ItemsSource = Glossaries;
-            //
-            DbList = LoadDbFiles();
-            DbComboBox.ItemsSource = DbList;
-            if (DbList.Count > 0)
-                DbComboBox.SelectedIndex = 0;
+            RefreshDBListUI();
             //setup
             this.AllowDrop = true;
             SwitchTab("Translate");
@@ -141,6 +123,7 @@ namespace SMT.WPF
             ShowTaskResult(false, "", "找不到数据库文件，请检查软件完整性");
             this.Close();
         }
+
 
         //切换Tab
         private void ChangeTab_OnClick(object sender, RoutedEventArgs e)
@@ -153,12 +136,35 @@ namespace SMT.WPF
 
 
         //MAIN
+        private void RefreshDBListUI()
+        {
+
+            Logger.Info($"数据库根目录：{DbPath}");
+            if (!Directory.Exists(DbPath))
+            {
+                return;
+            }
+            var files = Directory.GetFiles(DbPath);
+            DbList = (from file in files where Path.GetExtension(file).Equals(".json") select Path.GetFileName(file))
+                .ToList();
+            DbComboBox.ItemsSource = DbList;
+            if (DbList.Count > 0)
+                DbComboBox.SelectedIndex = 0;
+        }
+
+
         private void SelectPathButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new FolderBrowserDialog();
             var result = dialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
                 ModPathTextBox.Text = dialog.SelectedPath;
+        }
+
+
+        private void RefreshDBBtn_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshDBListUI();
         }
 
 
@@ -297,6 +303,7 @@ namespace SMT.WPF
             };
             var saveDialog = new SaveFileDialog
             {
+                InitialDirectory = DbPath,
                 Filter = "Json文件(*.json)|*",
                 FileName = "Untitled.json"
             };

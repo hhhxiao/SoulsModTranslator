@@ -93,7 +93,11 @@
                     <Button Margin="2"
                             Grid.Row="1"
                             Grid.Column="2"
-                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">刷新</Button>
+                            Name = "RefreshDBList"
+                            Click = "RefreshDBBtn_Click"
+                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                            刷新
+                   </Button>
 
                     <CheckBox Name="DoNotSplitTextBox"
                               Grid.Row="2"

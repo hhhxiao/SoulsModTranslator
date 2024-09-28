@@ -95,6 +95,26 @@ public class LangFile
         }
     }
 
+
+    //only return the first one
+    public string InterLangName()
+    {
+        foreach (var (bndName, bnd) in Bnds)
+        {
+            foreach (var f in bnd.Files)
+            {
+                DirectoryInfo dir = new DirectoryInfo(f.Name);
+                Logger.Debug(f.Name);
+                if (dir.Parent == null) continue;
+                var parent = dir.Parent;
+                if (parent.Parent == null) continue;
+                return parent.Parent.Name;
+            }
+        }
+        return "unknown";
+    }
+
+
     public static bool Dump(string input, string output)
     {
         var file = new LangFile();
