@@ -110,7 +110,7 @@ public static class Translator
     {
         return (string fileName, int fileId, string entryText, int entryId) =>
         {
-            var globalEntryId = (long)fileId * LangFile.Mtid + (long)entryId;
+            var globalEntryId = (long)fileId * LangFileSet.Mtid + (long)entryId;
             var res = dataBase.Translate(entryText.Trim(), entryId); //
             if (res.Key) //匹配成功
             {
@@ -152,7 +152,7 @@ public static class Translator
         {
             Success = false
         };
-        var langFile = new LangFile();
+        var langFile = new LangFileSet();
         var db = new DataBase();
         if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
         {
@@ -162,7 +162,7 @@ public static class Translator
 
         result.Success = true;
         var set = new HashSet<long>();
-        langFile.ForeachAllKey(CreateTraverser(db, keepAsText,
+        langFile.ForeachEntryRead(CreateTraverser(db, keepAsText,
             (fileName, globalEntryId, globalParaId, src) =>
             {
                 result.AddSentence(globalParaId, src, fileName);
@@ -188,7 +188,7 @@ public static class Translator
         Logger.Info($"导出为繁体：{useTrand}");
         // Logger.Info($"保持原始文本不分割：{keepText}");
         Logger.Info($"双语模式：{multiLang}");
-        var langFile = new LangFile();
+        var langFile = new LangFileSet();
         var db = new DataBase();
         if (!langFile.Load(Path.Combine(rootPath, Configuration.SrcLangPath)) || !db.Load(dbPath))
         {
@@ -199,7 +199,7 @@ public static class Translator
         var translated = TextImporter.Import(translateFileName);
         var translateCache = new Dictionary<long, EntryCache>();
         Logger.Info("已成功加载翻译文件");
-        langFile.ForeachAllKey(CreateTraverser(db, keepText,
+        langFile.ForeachEntryRead(CreateTraverser(db, keepText,
             (fileName, globalEntryId, globalParaId, src) =>
             {
                 if (!translated.ContainsKey(globalParaId))
@@ -229,13 +229,13 @@ public static class Translator
                 var newName = file.Name.Replace(Configuration.SrcLangInterName, Configuration.DestLangInterName);
                 var fileName = Path.GetFileNameWithoutExtension(newName);
                 file.Name = newName;
-                if (LangFile.BlackFileList.Contains(fileName)) continue; //不翻译
+                if (LangFileSet.BlackFileList.Contains(fileName)) continue; //不翻译
                 //read fmg and replace
                 var fmg = FMG.Read(file.Bytes);
                 foreach (var entry in fmg.Entries)
                 {
                     if (entry.Text == null) continue;
-                    var globalEntryId = file.ID * LangFile.Mtid + entry.ID;
+                    var globalEntryId = file.ID * LangFileSet.Mtid + entry.ID;
                     if (translateCache.TryGetValue(globalEntryId, out var dest))
                     {
                         if (multiLang)
@@ -259,7 +259,7 @@ public static class Translator
         Logger.Info("尝试备份原有的语言文件");
         Utils.BackupFileOrDir(destPath);
         Directory.CreateDirectory(destPath);
-        langFile.Save(destPath);
+        langFile.SaveTo(destPath);
         return true;
     }
 }

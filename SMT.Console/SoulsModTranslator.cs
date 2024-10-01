@@ -1,5 +1,7 @@
 ﻿namespace SMT.Console;
 using System.IO;
+using NLog;
+using NPOI.SS.Formula.Functions;
 using SMT.core;
 
 public class SoulsModTranslator
@@ -8,12 +10,23 @@ public class SoulsModTranslator
 
     static int Main(string[] args)
     {
-        // var db = new DataBase();
-        // db.Load(@"C:\Users\xhy\dev\SoulsModTranslator\SMT.WPF\db\eldenring.json");
-        // db.Save(@"C:\Users\xhy\dev\SoulsModTranslator\SMT.WPF\db\eldenring_save.json");
-        var langFile = new LangFile();
-        langFile.Load(@"C:\Users\xhy\dev\SoulsModTranslator\vanilla\EldenRing\zhotw");
-        System.Console.WriteLine(langFile.InterLangName());
+        // var langFile = new LangFileSet();
+        // string path = @"C:\Users\xhy\games\ERMods\ConvergenceER\Convergence\msg\zhocn";
+        // langFile.Load(path);
+        // langFile.ForeachEntryUpdate((string fn, int fid, string text, int eid) =>
+        // {
+        //     return "😅";
+        // });
+
+        // langFile.SaveTo(path);
+
+        var path = @"C:\Users\xhy\dev\SoulsModTranslator\vanilla\EldenRing\zhotw";
+
+        var langFile = new LangFileSet();
+        if (langFile.Load(path))
+        {
+            System.Console.WriteLine(langFile.GetInnerLang());
+        }
         return 0;
     }
 }

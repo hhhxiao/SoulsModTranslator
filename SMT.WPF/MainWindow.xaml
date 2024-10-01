@@ -288,12 +288,14 @@
                         Grid.Row = "4"
                         Grid.Column = "0"
                         Name="CN2TWBtn"
+                        Click = "CN2TWBtn_onClick"
                         >简中语言文件转繁中</Button>
                 <Button Margin="2"
                         Height="40"
                         Grid.Row = "4"
                         Grid.Column = "1"
                         Name="TW2CNBtn"
+                        Click = "TW2CNBtn_onClick"
                         >繁中语言文件转简中</Button>
                 </Grid>
             

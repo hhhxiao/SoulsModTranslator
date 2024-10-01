@@ -129,10 +129,10 @@ public class DataBase
     }
 
     ///=======================================Static methods below=========================================
-    private static Dictionary<string, string> ReadLangFileToKv(LangFile langFile)
+    private static Dictionary<string, string> ReadLangFileToKv(LangFileSet langFile)
     {
         var dict = new Dictionary<string, string>();
-        langFile.ForeachAllKey((fName, fId, text, tId) => { dict.TryAdd($"{fName}|{tId}", text); });
+        langFile.ForeachEntryRead((fName, fId, text, tId) => { dict.TryAdd($"{fName}|{tId}", text); });
         return dict;
     }
 
@@ -153,8 +153,8 @@ public class DataBase
 
     public static bool CreateDb(string srcPath, string destPath, string savePath)
     {
-        var srcLang = new LangFile();
-        var destLang = new LangFile();
+        var srcLang = new LangFileSet();
+        var destLang = new LangFileSet();
         if (!srcLang.Load(srcPath) || !destLang.Load(destPath))
         {
             Logger.Error("无法读取语言文件，创建数据库失败");

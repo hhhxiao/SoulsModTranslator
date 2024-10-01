@@ -10,6 +10,7 @@ using System.Windows.Navigation;
 using NLog.Targets;
 using SMT.core;
 using Microsoft.VisualBasic.Logging;
+using Org.BouncyCastle.Bcpg.Sig;
 
 namespace SMT.WPF
 {
@@ -288,6 +289,7 @@ namespace SMT.WPF
         }
 
         //TOOLS
+        //db generation
         private async void ExportDbBtn_OnClick(object sender, RoutedEventArgs e)
         {
             var keyPath = "";
@@ -321,6 +323,8 @@ namespace SMT.WPF
             ShowTaskResult(res, "导出成功", "导出失败");
         }
 
+
+        //db merge
         private async void MergeDbBtn_OnClick(object sender, RoutedEventArgs e)
         {
             var dialog = new System.Windows.Forms.OpenFileDialog
@@ -345,6 +349,49 @@ namespace SMT.WPF
             ShowTaskResult(res, "合并成功", "合并失败");
         }
 
+        private async void CN2TWBtn_onClick(object sender, RoutedEventArgs e)
+        {
+
+            var inputPath = "";
+            var outputPath = "";
+            var inputDialog = new FolderBrowserDialog
+            {
+                Description = "选择简中语言文件路径(内含.msgbnd.dcx文件)"
+            };
+            var outputDialog = new FolderBrowserDialog
+            {
+                Description = "选择导出的繁中语言文件路径"
+            };
+            var inputResult = inputDialog.ShowDialog();
+            if (inputResult != System.Windows.Forms.DialogResult.OK) return;
+            var outputResult = outputDialog.ShowDialog();
+            if (outputResult != System.Windows.Forms.DialogResult.OK) return;
+            inputPath = inputDialog.SelectedPath;
+            outputPath = outputDialog.SelectedPath;
+
+        }
+
+        private async void TW2CNBtn_onClick(object sender, RoutedEventArgs e)
+        {
+            var inputPath = "";
+            var outputPath = "";
+            var inputDialog = new FolderBrowserDialog
+            {
+                Description = "选择繁中语言文件路径(内含.msgbnd.dcx文件)"
+            };
+            var outputDialog = new FolderBrowserDialog
+            {
+                Description = "选择导出的简中语言文件路径"
+            };
+            var inputResult = inputDialog.ShowDialog();
+            if (inputResult != System.Windows.Forms.DialogResult.OK) return;
+            var outputResult = outputDialog.ShowDialog();
+            if (outputResult != System.Windows.Forms.DialogResult.OK) return;
+            inputPath = inputDialog.SelectedPath;
+            outputPath = outputDialog.SelectedPath;
+        }
+
+
         private async void DumpLangFile_OnClick(object sender, RoutedEventArgs e)
         {
             var inputPath = "";
@@ -364,7 +411,7 @@ namespace SMT.WPF
             inputPath = inputDialog.SelectedPath;
             outputPath = outputDialog.SelectedPath;
 
-            var res = await Task.Run(() => LangFile.Dump(inputPath, outputPath));
+            var res = await Task.Run(() => LangFileSet.Dump(inputPath, outputPath));
             ShowTaskResult(res, "导出成功", "导出失败");
         }
 

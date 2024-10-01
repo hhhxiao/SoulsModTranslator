@@ -3,7 +3,7 @@ using SoulsFormats;
 
 namespace SMT.core;
 
-public class LangFile
+public class LangFileSet
 {
     private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     public const long Mtid = 100000000;
@@ -13,6 +13,15 @@ public class LangFile
         "ToS_win64", //用户协议相关
         "TextEmbedImageName_win64", //键位相关
     };
+
+
+    public enum InterLang
+    {
+        araAE, deuDE, engUS, fraFR, itaIT, jpnJP, korKR,
+        polPL, porBR, rusRU, spaAR, spaES, thaTH,
+        zhoCN, zhoTW
+    }
+
 
     public Dictionary<string, BND4> Bnds = new();
 
@@ -36,13 +45,13 @@ public class LangFile
             try
             {
                 var bnd = BND4.Read(Path.Combine(langRootPath, bndFile.Name));
-                if (bnd.Files.Any(fmgFile => !fmgFileIdSet.Add(fmgFile.ID)))
-                {
-                    Logger.Error($"发现重复的FMG语言文件，文件夹{langRootPath}中是否存在与{bndFile.Name}相同的dcx" +
-                                 $"文件(比如黑暗之魂III和艾尔登法环)请根据需求删除(或修改后缀名)其中一个");
-                    Logger.Error($"推荐做法为新建文件夹并将除了item_dlc02.msgbnd.dcx以及menu_dlc02.msgbnd.dcx之外的dcx文件移动到该文件夹内");
-                    return false;
-                }
+                // if (bnd.Files.Any(fmgFile => !fmgFileIdSet.Add(fmgFile.ID)))
+                // {
+                //     Logger.Error($"发现重复的FMG语言文件，文件夹{langRootPath}中是否存在与{bndFile.Name}相同的dcx" +
+                //                  $"文件(比如黑暗之魂III和艾尔登法环)请根据需求删除(或修改后缀名)其中一个");
+                //     Logger.Error($"推荐做法为新建文件夹并将除了item_dlc02.msgbnd.dcx以及menu_dlc02.msgbnd.dcx之外的dcx文件移动到该文件夹内");
+                //     return false;
+                // }
 
                 Bnds[bndFile.Name] = bnd;
             }
@@ -57,7 +66,7 @@ public class LangFile
     }
 
 
-    public bool Save(string folder)
+    public bool SaveTo(string folder)
     {
         if (!Directory.Exists(folder))
         {
@@ -77,7 +86,7 @@ public class LangFile
         return true;
     }
 
-    public void ForeachAllKey(Action<string, int, string, int> traverser)
+    public void ForeachEntryRead(Action<string, int, string, int> traverser)
     {
         foreach (var (bndName, bnd) in Bnds)
         {
@@ -96,28 +105,55 @@ public class LangFile
     }
 
 
-    //only return the first one
-    public string InterLangName()
+    public void ForeachEntryUpdate(Func<string, int, string, int, string> replacer)
     {
         foreach (var (bndName, bnd) in Bnds)
         {
-            foreach (var f in bnd.Files)
+            foreach (var file in bnd.Files)
             {
-                DirectoryInfo dir = new DirectoryInfo(f.Name);
-                Logger.Debug(f.Name);
-                if (dir.Parent == null) continue;
-                var parent = dir.Parent;
-                if (parent.Parent == null) continue;
-                return parent.Parent.Name;
+                var fmg = FMG.Read(file.Bytes);
+                foreach (var entry in fmg.Entries)
+                {
+                    if (entry.Text != null)
+                        entry.Text = replacer(file.Name, file.ID, entry.Text, entry.ID);
+                }
+                file.Bytes = fmg.Write();
+            }
+        }
+    }
+
+    public void ChangeInterLang()
+    {
+
+    }
+
+
+    //N:\GR\data\INTERROOT_win64\msg\deuDE\TalkMsg.fmg er
+    //N:\SPRJ\data\INTERROOT_ps4\msg\zhoTW\64bit\会話.fmg
+    //只返回第一个
+    public string GetInnerLang()
+    {
+
+        foreach (var (bndName, bnd) in Bnds)
+        {
+            foreach (var file in bnd.Files)
+            {
+                var pathTokens = file.Name.Split("\\");
+                for (var i = 0; i < pathTokens.Length; i++)
+                {
+                    if (i < pathTokens.Length - 1 && pathTokens[i] == "msg")
+                    {
+                        return pathTokens[i + 1];
+                    }
+                }
             }
         }
         return "unknown";
     }
 
-
     public static bool Dump(string input, string output)
     {
-        var file = new LangFile();
+        var file = new LangFileSet();
         if (!file.Load(input))
         {
             return false;
