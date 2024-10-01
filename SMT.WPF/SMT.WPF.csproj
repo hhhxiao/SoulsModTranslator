@@ -23,9 +23,5 @@
   <ItemGroup>
     <PackageReference Include="AdonisUI" Version="1.17.1" />
     <PackageReference Include="AdonisUI.ClassicTheme" Version="1.17.1" />
-    <PackageReference Include="NLog" Version="5.2.8" />
-    <PackageReference Include="NLog.Config" Version="4.7.15" />
-    <PackageReference Include="NLog.WPF" Version="1.2.5" />
-    <PackageReference Include="NPOI" Version="2.7.0" />
   </ItemGroup>
 </Project>

@@ -186,23 +186,23 @@
                               Grid.Row="4"
                               Grid.Column="0"
                               Margin="2"
-                              IsEnabled="True">使用\n替换换行(机翻请勾选)</CheckBox>
+                              IsEnabled="True">使用特殊字符[@]替换换行(机翻请勾选)</CheckBox>
 
                     <Label Grid.Row="0"
                            Grid.Column="1">翻译选项</Label>
-                    <CheckBox Name="RemoveSPace"
+                    <!-- <CheckBox Name="RemoveSPace"
                               Grid.Row="1"
                               Grid.Column="1"
-                              Margin="2">移除中文和英文之间的空格</CheckBox>
+                              Margin="2">移除中文和英文之间的空格</CheckBox> -->
 
-                    <CheckBox Name="ExportAsTranditionalCheckBox"
+                    <!-- <CheckBox Name="ExportAsTranditionalCheckBox"
                               Grid.Row="2"
                               Grid.Column="1"
                               IsEnabled="False"
-                              Margin="2">生成繁体语言文件</CheckBox>
+                              Margin="2">生成繁体语言文件</CheckBox> -->
 
                     <CheckBox Name="MultiLangCheckBox"
-                              Grid.Row="3"
+                              Grid.Row="1"
                               Grid.Column="1"
                               Margin="2">生成中英双语样式</CheckBox>
                 </Grid>
@@ -374,13 +374,21 @@
                 <TextBlock Margin="16,0">
                     UI界面设计：
                     <Hyperlink NavigateUri="https://github.com/benruehl/adonis-ui"
-                               RequestNavigate="Hyperlink_RequestNavigate">adonis-ui</Hyperlink>（MIT License）
+                               RequestNavigate="Hyperlink_RequestNavigate">adonis-ui</Hyperlink> （MIT License）
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     Excel表格文件读写:
                     <Hyperlink NavigateUri="https://github.com/nissl-lab/npoi"
-                               RequestNavigate="Hyperlink_RequestNavigate"> npoi</Hyperlink> （Apache License Version 2.0）
+                               RequestNavigate="Hyperlink_RequestNavigate">npoi</Hyperlink>（Apache License Version 2.0）
                 </TextBlock>
+                
+                <TextBlock Margin="16,0">
+                    简繁中文互互转:
+                    <Hyperlink NavigateUri="https://github.com/CosineG/OpenCC.NET"
+                               RequestNavigate="Hyperlink_RequestNavigate">OpenCC.NET</Hyperlink> （Apache License Version 2.0）
+                </TextBlock>
+
+
             </StackPanel>
         </StackPanel>
     </Grid>

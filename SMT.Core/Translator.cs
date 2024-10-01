@@ -218,44 +218,33 @@ public static class Translator
             }));
         Logger.Info($"共处理 {translateCache.Count} 段文本");
 
+
         //Generation
         var destPath = Path.Combine(rootPath, Configuration.DestLangPath);
-        foreach (var bnd in langFile.Bnds)
-        {
-            Logger.Info($"开始生成文件：{Path.Join(destPath, bnd.Key)} ");
-            foreach (var file in bnd.Value.Files)
-            {
-                //replace name form engus to zhocn
-                var newName = file.Name.Replace(Configuration.SrcLangInterName, Configuration.DestLangInterName);
-                var fileName = Path.GetFileNameWithoutExtension(newName);
-                file.Name = newName;
-                if (LangFileSet.BlackFileList.Contains(fileName)) continue; //不翻译
-                //read fmg and replace
-                var fmg = FMG.Read(file.Bytes);
-                foreach (var entry in fmg.Entries)
-                {
-                    if (entry.Text == null) continue;
-                    var globalEntryId = file.ID * LangFileSet.Mtid + entry.ID;
-                    if (translateCache.TryGetValue(globalEntryId, out var dest))
-                    {
-                        if (multiLang)
-                        {
-                            entry.Text = dest.Collect() + "\n" + entry.Text;
-                        }
-                        else
-                        {
-                            entry.Text = dest.Collect();
-                        }
-                    }
-                    else
-                    {
-                        Logger.Warn($"缺失文本翻译: {entry.ID}->{entry.Text}");
-                    }
-                }
-                file.Bytes = fmg.Write();
-            }
-        }
 
+        langFile.ForeachEntryUpdate((string fileName, int fileId, string entry, int entryId) =>
+        {
+            if (LangFileSet.BlackFileList.Contains(Path.GetFileNameWithoutExtension(fileName))) return entry;
+            if (entry == null) return null;
+            var globalEntryId = (long)fileId * LangFileSet.Mtid + (long)entryId;
+            if (translateCache.TryGetValue(globalEntryId, out var dest))
+            {
+                if (multiLang)
+                {
+                    return dest.Collect() + "\n" + entry;
+                }
+                else
+                {
+                    return dest.Collect();
+                }
+            }
+            else
+            {
+                Logger.Warn($"缺失文本翻译: {entryId}->{entry}");
+            }
+            return null;
+        });
+        langFile.UpdateInterLang(Configuration.DestLangInterName);
         Logger.Info("尝试备份原有的语言文件");
         Utils.BackupFileOrDir(destPath);
         Directory.CreateDirectory(destPath);

@@ -25,7 +25,7 @@ public class SoulsModTranslator
         var langFile = new LangFileSet();
         if (langFile.Load(path))
         {
-            System.Console.WriteLine(langFile.GetInnerLang());
+            System.Console.WriteLine(langFile.GetIntnerLang());
         }
         return 0;
     }

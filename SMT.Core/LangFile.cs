@@ -1,4 +1,5 @@
 ﻿using NLog;
+using OpenCCNET;
 using SoulsFormats;
 
 namespace SMT.core;
@@ -105,7 +106,7 @@ public class LangFileSet
     }
 
 
-    public void ForeachEntryUpdate(Func<string, int, string, int, string> replacer)
+    public void ForeachEntryUpdate(Func<string, int, string, int, string?> replacer)
     {
         foreach (var (bndName, bnd) in Bnds)
         {
@@ -122,16 +123,30 @@ public class LangFileSet
         }
     }
 
-    public void ChangeInterLang()
+    public void UpdateInterLang(string newLang)
     {
+        var innerLang = GetIntnerLang();
+        if (innerLang == null)
+        {
+            Logger.Warn("Inner lang of current lang file is unknown, can now switch to " + newLang);
+            return;
+        }
 
+        foreach (var (bndName, bnd) in Bnds)
+        {
+            foreach (var file in bnd.Files)
+            {
+                file.Name = file.Name.Replace(innerLang, newLang);
+                var fmg = FMG.Read(file.Bytes);
+                file.Bytes = fmg.Write();
+            }
+        }
     }
-
 
     //N:\GR\data\INTERROOT_win64\msg\deuDE\TalkMsg.fmg er
     //N:\SPRJ\data\INTERROOT_ps4\msg\zhoTW\64bit\会話.fmg
     //只返回第一个
-    public string GetInnerLang()
+    public string? GetIntnerLang()
     {
 
         foreach (var (bndName, bnd) in Bnds)
@@ -148,8 +163,9 @@ public class LangFileSet
                 }
             }
         }
-        return "unknown";
+        return null;
     }
+
 
     public static bool Dump(string input, string output)
     {
@@ -179,6 +195,37 @@ public class LangFileSet
             }
         }
         return true;
+    }
+
+    public static bool CNTWConvert(string interLangName, string srcPath, string descPath)
+    {
+        if (interLangName != "zhoTW" && interLangName != "zhoCN")
+        {
+            Logger.Error($"不合法的目标语言 {interLangName}");
+            return false;
+        }
+        var langFile = new LangFileSet();
+        if (!langFile.Load(srcPath))
+        {
+            Logger.Error($"不合法的语言文件 {srcPath}");
+            return false;
+        }
+        langFile.UpdateInterLang(interLangName);
+        ZhConverter.Initialize();
+        langFile.ForeachEntryUpdate((string file, int fileId, string entry, int entryId) =>
+        {
+            if (interLangName == "zhoCN")
+            {
+                return ZhConverter.HantToHans(entry);
+            }
+            else if (interLangName == "zhoTW")
+            {
+                return ZhConverter.HansToHant(entry);
+            }
+            return null;
+        });
+
+        return langFile.SaveTo(descPath);
     }
 }
 
