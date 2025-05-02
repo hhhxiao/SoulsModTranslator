@@ -31,6 +31,10 @@ public static class TextImporter
                     {
                         result.Add((long)id, text.Replace("[@]", "\n"));
                     }
+                    else
+                    {
+                        Logger.Warn($"发现重复ID: {id}");
+                    }
                 }
             }
         }
@@ -49,25 +53,22 @@ public static class TextImporter
         list.Add("[0]");
         try
         {
-            List<string> buffer = new List<string>();
-            foreach (var rawLine in list)
+            var buffer = new List<string>();
+            foreach (var line in list.Select(rawLine => rawLine.Trim()))
             {
-                var line = rawLine.Trim();
                 if (line.StartsWith("|") && line.EndsWith("|"))
                 {
-                    string idStr = line;
+                    var idStr = line;
                     if (line.Contains(","))
                     {
                         idStr = line.Trim().Split(",")[0];
                     }
 
                     var id = Convert.ToInt64(idStr.Replace("|", ""));
-                    if (id != 0)
-                    {
-                        var text = string.Join("\n", buffer);
-                        buffer.Clear();
-                        res.Add(id, text.Replace("[@]", "\n"));
-                    }
+                    if (id == 0) continue;
+                    var text = string.Join("\n", buffer);
+                    buffer.Clear();
+                    res.Add(id, text.Replace("[@]", "\n"));
                 }
                 else
                 {

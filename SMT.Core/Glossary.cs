@@ -10,19 +10,19 @@ public class Glossary
 {
     private class RegexMatchRule
     {
-        public Regex? Regex = null;
+        public Regex? Regex;
         public string Replacement = "";
     };
 
     private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    private Regex? _phaseRegex = null;
-    private IOrderedEnumerable<KeyValuePair<string, string>>? _orderedPhaseDict = null;
+    private Regex? _phaseRegex;
+    private IOrderedEnumerable<KeyValuePair<string, string>>? _orderedPhaseDict;
 
-    private readonly List<RegexMatchRule> _normalRegexList = new List<RegexMatchRule>();
+    private readonly List<RegexMatchRule> _normalRegexList = new();
 
     //TODO: 分两类，支持正则和字符串
 
-    private readonly bool _ignoreCase = false;
+    private readonly bool _ignoreCase;
 
     public Glossary(bool caseInsensitive)
     {
@@ -82,10 +82,10 @@ public class Glossary
         try
         {
             foreach (var rule in regexKv.Select(regexString => new RegexMatchRule
-            {
-                Regex = new Regex(regexString.Key, _ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None),
-                Replacement = regexString.Value,
-            }))
+                     {
+                         Regex = new Regex(regexString.Key, _ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None),
+                         Replacement = regexString.Value,
+                     }))
             {
                 _normalRegexList.Add(rule);
             }
@@ -113,12 +113,9 @@ public class Glossary
             }
         ) ?? input;
         //然后遍历每一个正则进行替换和匹配
-        foreach (var rule in _normalRegexList)
-        {
-            output = rule.Regex?.Replace(output ?? input, match => rule.Replacement);
-        }
-
-        return output ?? input;
+        output = _normalRegexList.Aggregate(output,
+            (current, rule) => rule.Regex?.Replace(current ?? input, match => rule.Replacement) ?? string.Empty);
+        return output;
     }
 
     public ExportResult Process(ExportResult result)

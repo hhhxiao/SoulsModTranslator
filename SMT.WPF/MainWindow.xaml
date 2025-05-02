@@ -4,21 +4,22 @@
                              xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
                              xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                              PlaceTitleBarOverContent="False"
-                             Title="魂友MOD翻译工具v2.0"
-                             Height="645"
+                             Title="魂游MOD翻译工具v2.0"
+                             Height="670"
                              Width="840"
                              FontSize="14"
                              ShrinkTitleBarWhenMaximized="True">
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="140"/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="140" />
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
         <GroupBox Grid.Column="0"
                   Padding="0">
             <StackPanel>
-                <Border Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}"/>
+                <Border
+                    Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}" />
                 <Button Name="TranslateTab"
                         Click="ChangeTab_OnClick"
                         Height="40"
@@ -47,7 +48,9 @@
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
-                       FontWeight="Normal">基本设置</Label>
+                       FontWeight="Normal">
+                    基本设置
+                </Label>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -65,13 +68,15 @@
                            Grid.Column="0"
                            Content="选择msg目录"
                            VerticalContentAlignment="Center"
-                           FontWeight="Normal"></Label>
+                           FontWeight="Normal">
+                    </Label>
                     <TextBox Margin="2"
                              Grid.Row="0"
                              Grid.Column="1"
                              Name="ModPathTextBox"
                              VerticalContentAlignment="Center"
-                             MaxLines="1"></TextBox>
+                             MaxLines="1">
+                    </TextBox>
                     <Button Margin="2"
                             Grid.Row="0"
                             Grid.Column="2"
@@ -83,31 +88,111 @@
                            Grid.Row="1"
                            Grid.Column="0"
                            VerticalContentAlignment="Center"
-                           FontWeight="Normal">选择数据库</Label>
+                           FontWeight="Normal">
+                        选择数据库
+                    </Label>
                     <ComboBox Margin="2"
                               Name="DbComboBox"
                               VerticalContentAlignment="Center"
                               Grid.Row="1"
                               Grid.Column="1"
-                              Grid.ColumnSpan="1"></ComboBox>
+                              Grid.ColumnSpan="1">
+                    </ComboBox>
                     <Button Margin="2"
                             Grid.Row="1"
                             Grid.Column="2"
-                            Name = "RefreshDBList"
-                            Click = "RefreshDBBtn_Click"
+                            Name="RefreshDBList"
+                            Click="RefreshDBBtn_Click"
                             Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
-                            刷新
-                   </Button>
+                        刷新
+                    </Button>
 
                     <CheckBox Name="DoNotSplitTextBox"
                               Grid.Row="2"
                               Grid.ColumnSpan="3"
-                              Margin="2">匹配不将文本分割为段落</CheckBox>
+                              Margin="2">
+                        匹配不将文本分割为段落
+                    </CheckBox>
+                </Grid>
+
+
+                <Label Margin="8"
+                       VerticalContentAlignment="Center"
+                       FontSize="20"
+                       FontWeight="Normal">
+                    生成
+                </Label>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0"
+                           Grid.Column="0">
+                        导出选项
+                    </Label>
+
+                    <CheckBox Name="UseExcelCheckBox"
+                              Grid.Row="1"
+                              Grid.Column="0"
+                              Margin="2">
+                        导出为.xlsx格式
+                    </CheckBox>
+                    <CheckBox Name="AutoSortCheckBox"
+                              Grid.Row="2"
+                              Grid.Column="0"
+                              Margin="2"
+                              IsEnabled="True">
+                        自动排序导出文本(启用术语表时有效)
+                    </CheckBox>
+                    <CheckBox Name="MarkSourceCheckBox"
+                              Grid.Row="3"
+                              Grid.Column="0"
+                              Margin="2"
+                              IsEnabled="True">
+                        在编号后注明文本所属文件(仅限txt)
+                    </CheckBox>
+                    <CheckBox Name="MarkNewLineCheckBox"
+                              Grid.Row="4"
+                              Grid.Column="0"
+                              Margin="2"
+                              IsEnabled="True">
+                        使用特殊字符[@]替换换行(机翻请勾选)
+                    </CheckBox>
+                    <CheckBox Name="MultiFileCheckBox"
+                              Grid.Row="5"
+                              Grid.Column="0"
+                              Margin="3"
+                              IsEnabled="True">
+                        文本过多时导出多个文件(>=50K行,仅限Excel)
+                    </CheckBox>
+                    <Label Grid.Row="0"
+                           Grid.Column="1">
+                        翻译选项
+                    </Label>
+                    <CheckBox Name="MultiLangCheckBox"
+                              Grid.Row="1"
+                              Grid.Column="1"
+                              Margin="2">
+                        生成中英双语样式
+                    </CheckBox>
                 </Grid>
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
-                       FontWeight="Normal">术语表</Label>
+                       FontWeight="Normal">
+                    术语表
+                </Label>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -122,20 +207,28 @@
                     <CheckBox Name="UseGlossaryCheckBox"
                               Grid.Row="0"
                               Grid.Column="0"
-                              Margin="2">启用术语表</CheckBox>
+                              Margin="2">
+                        启用术语表
+                    </CheckBox>
                     <CheckBox Name="IgnoreCaseCheckBox"
                               Grid.Row="0"
                               Grid.Column="1"
-                              Margin="2">匹配时忽视大小写</CheckBox>
+                              Margin="2">
+                        匹配时忽视大小写
+                    </CheckBox>
 
                     <Button Margin="2"
                             Grid.Row="1"
                             Grid.Column="0"
-                            Click="GlossaryAdd_onClick">添加术语表</Button>
+                            Click="GlossaryAdd_onClick">
+                        添加术语表
+                    </Button>
                     <Button Margin="2"
                             Grid.Row="1"
                             Grid.Column="1"
-                            Click="GlossaryRemove_onClick">删除选中术语表</Button>
+                            Click="GlossaryRemove_onClick">
+                        删除选中术语表
+                    </Button>
                     <ListBox Margin="2"
                              SelectionMode="Extended"
                              Name="GlossaryListBox"
@@ -145,81 +238,6 @@
                     </ListBox>
                 </Grid>
 
-
-                <Label Margin="8"
-                       VerticalContentAlignment="Center"
-                       FontSize="20"
-                       FontWeight="Normal">生成</Label>
-
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-
-                    </Grid.RowDefinitions>
-
-                    <Label Grid.Row="0"
-                           Grid.Column="0">导出选项</Label>
-
-                    <CheckBox Name="UseExcelCheckBox"
-                              Grid.Row="1"
-                              Grid.Column="0"
-                              Margin="2">导出为.xlsx格式</CheckBox>
-                    <CheckBox Name="AutoSortCheckBox"
-                              Grid.Row="2"
-                              Grid.Column="0"
-                              Margin="2"
-                              IsEnabled="True">自动排序导出文本(启用术语表时有效)</CheckBox>
-                    <CheckBox Name="MarkSourceCheckBox"
-                              Grid.Row="3"
-                              Grid.Column="0"
-                              Margin="2"
-                              IsEnabled="True">在编号后注明文本所属文件(仅限txt)</CheckBox>
-                    <CheckBox Name="MarkNewLineCheckBox"
-                              Grid.Row="4"
-                              Grid.Column="0"
-                              Margin="2"
-                              IsEnabled="True">使用特殊字符[@]替换换行(机翻请勾选)</CheckBox>
-
-                    <Label Grid.Row="0"
-                           Grid.Column="1">翻译选项</Label>
-                    <!-- <CheckBox Name="RemoveSPace"
-                              Grid.Row="1"
-                              Grid.Column="1"
-                              Margin="2">移除中文和英文之间的空格</CheckBox> -->
-
-                    <!-- <CheckBox Name="ExportAsTranditionalCheckBox"
-                              Grid.Row="2"
-                              Grid.Column="1"
-                              IsEnabled="False"
-                              Margin="2">生成繁体语言文件</CheckBox> -->
-
-                    <CheckBox Name="MultiLangCheckBox"
-                              Grid.Row="1"
-                              Grid.Column="1"
-                              Margin="2">生成中英双语样式</CheckBox>
-                </Grid>
-                <!--<CheckBox Name="AutoSortCheckBox"
-                    Margin="2"
-                    IsEnabled="True">导出时将经术语表处理后不包含ASCII字符的文本集中到一起</CheckBox>
-                    <CheckBox Name="AutoRemoveSpaceCheckBox"
-                        Margin="2"
-                    IsEnabled="False">导入时自动移除中文附近的空格</CheckBox>-->
-                <!--<CheckBox Name="SplitCheckBox"
-            Margin="2"
-            Visibility="Collapsed"
-            IsEnabled="False">未翻译文本过多（大于50K行时）时拆分为多个文件（防止谷歌翻译失败）</CheckBox>
-                    <CheckBox Name="UseCompactCheckBox"
-            Margin="2"
-            Visibility="Collapsed"
-            IsEnabled="False">使用压缩+索引的存储格式(导出文本较少，机翻结果更统一，但是逻辑性更弱)</CheckBox>-->
 
                 <StackPanel Orientation="Horizontal"
                             FlowDirection="RightToLeft"
@@ -235,13 +253,15 @@
                             Click="ExportBtn_onClick"
                             Margin="2"
                             Width="120"
-                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">导出未翻译文本</Button>
+                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                        导出未翻译文本
+                    </Button>
                 </StackPanel>
             </StackPanel>
 
             <StackPanel Name="ToolStackPanel"
                         Margin="10">
-                 <Grid>
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
@@ -254,52 +274,64 @@
                         <RowDefinition Height="*"></RowDefinition>
                         <RowDefinition Height="*"></RowDefinition>
                     </Grid.RowDefinitions>
-<!-- 数据库工具 -->
-                <Label Margin="8"
-                       Grid.Row = "0"
-                       VerticalContentAlignment="Center"
-                       FontSize="20"
-                       FontWeight="Normal">数据库工具</Label>
-                <Button Margin="2"
-                        Grid.Row = "1"
-                        Grid.Column = "0"
-                        Height="40"
-                        Name="ExportDbBtn"
-                        Click="ExportDbBtn_OnClick">从原版文本或已有翻译中导出对照数据库</Button>
-                <Button Margin="2"
-                        Height="40"
-                        Grid.Row = "1"
-                        Grid.Column = "1"
-                        Name="MergeDbBtn"
-                        Click="MergeDbBtn_OnClick">合并多个对照数据库（请置于同一个文件夹）</Button>
-                <Button Margin="2"
-                        Height="40"
-                        Grid.Row = "2"
-                        Name="DumpLangFileBtn"
-                        Click="DumpLangFile_OnClick">导出语言文件到文本文件</Button>
-<!-- 语言工具 -->
-                 <Label Margin="8"
-                        Grid.Row = "3"
-                        VerticalContentAlignment="Center"
-                        FontSize="20"
-                        FontWeight="Normal">语言工具</Label>
-                <Button Margin="2"
-                        Height="40"
-                        Grid.Row = "4"
-                        Grid.Column = "0"
-                        Name="CN2TWBtn"
-                        Click = "CN2TWBtn_onClick"
-                        >简中语言文件转繁中</Button>
-                <Button Margin="2"
-                        Height="40"
-                        Grid.Row = "4"
-                        Grid.Column = "1"
-                        Name="TW2CNBtn"
-                        Click = "TW2CNBtn_onClick"
-                        >繁中语言文件转简中</Button>
+                    <!-- 数据库工具 -->
+                    <Label Margin="8"
+                           Grid.Row="0"
+                           VerticalContentAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Normal">
+                        数据库工具
+                    </Label>
+                    <Button Margin="2"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Height="40"
+                            Name="ExportDbBtn"
+                            Click="ExportDbBtn_OnClick">
+                        从原版文本或已有翻译中导出对照数据库
+                    </Button>
+                    <Button Margin="2"
+                            Height="40"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Name="MergeDbBtn"
+                            Click="MergeDbBtn_OnClick">
+                        合并多个对照数据库（请置于同一个文件夹）
+                    </Button>
+                    <Button Margin="2"
+                            Height="40"
+                            Grid.Row="2"
+                            Name="DumpLangFileBtn"
+                            Click="DumpLangFile_OnClick">
+                        导出语言文件到文本文件
+                    </Button>
+                    <!-- 语言工具 -->
+                    <Label Margin="8"
+                           Grid.Row="3"
+                           VerticalContentAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Normal">
+                        语言工具
+                    </Label>
+                    <Button Margin="2"
+                            Height="40"
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Name="CN2TWBtn"
+                            Click="CN2TWBtn_onClick">
+                        简中语言文件转繁中
+                    </Button>
+                    <Button Margin="2"
+                            Height="40"
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Name="TW2CNBtn"
+                            Click="TW2CNBtn_onClick">
+                        繁中语言文件转简中
+                    </Button>
                 </Grid>
-            
-        
+
+
             </StackPanel>
             <StackPanel Name="AboutStackPanel"
                         Margin="10">
@@ -307,7 +339,9 @@
                        Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
-                       FontWeight="Normal">SOFTWARE_NAME by hhhxiao_</Label>
+                       FontWeight="Normal">
+                    SOFTWARE_NAME by hhhxiao_
+                </Label>
                 <TextBlock Margin="16,0"
                            TextWrapping="Wrap">
                     本软件可以导出mod新增的所有文本，并导入翻译后的新增文本以生成.msgbng.dcx的标准文本文件。可以
@@ -320,72 +354,103 @@
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
-                       FontWeight="Normal">作者信息</Label>
+                       FontWeight="Normal">
+                    作者信息
+                </Label>
                 <TextBlock Margin="16,0">
                     作者Github:
                     <Hyperlink NavigateUri="https://github.com/hhhxiao"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://github.com/hhhxiao
+                    </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     作者Bilibili:
                     <Hyperlink NavigateUri="https://space.bilibili.com/34227664"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://space.bilibili.com/34227664</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://space.bilibili.com/34227664
+                    </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     作者爱发电:
                     <Hyperlink NavigateUri="https://afdian.net/@hhhxiao"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://afdian.net/@hhhxiao</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://afdian.net/@hhhxiao
+                    </Hyperlink>
                 </TextBlock>
 
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
-                       FontWeight="Normal">教程与反馈</Label>
+                       FontWeight="Normal">
+                    教程与反馈
+                </Label>
                 <TextBlock Margin="16,0">
                     使用教程:
                     <Hyperlink NavigateUri="https://www.bilibili.com/video/BV17p421Q7qJ/"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://www.bilibili.com/video/BV17p421Q7qJ/</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://www.bilibili.com/video/BV17p421Q7qJ/
+                    </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     文档:
                     <Hyperlink NavigateUri="https://hhhxiao.github.io/SoulsModTranslator/"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://hhhxiao.github.io/SoulsModTranslator/</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://hhhxiao.github.io/SoulsModTranslator/
+                    </Hyperlink>
                 </TextBlock>
 
                 <TextBlock Margin="16,0">
                     前往Github反馈:
                     <Hyperlink NavigateUri="https://github.com/hhhxiao/SoulsModTranslator/issues"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao/SoulsModTranslator/issues</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://github.com/hhhxiao/SoulsModTranslator/issues
+                    </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     更新日志:
                     <Hyperlink NavigateUri="https://github.com/hhhxiao/SoulsModTranslator/blob/main/changelog.md"
-                               RequestNavigate="Hyperlink_RequestNavigate">https://github.com/hhhxiao/SoulsModTranslator/blob/main/changelog.md</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        https://github.com/hhhxiao/SoulsModTranslator/blob/main/changelog.md
+                    </Hyperlink>
                 </TextBlock>
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
                        FontSize="20"
-                       FontWeight="Normal">第三方库</Label>
+                       FontWeight="Normal">
+                    第三方库
+                </Label>
                 <TextBlock Margin="16,0">
-                  FromSoftware引擎dcx文件读写：
+                    FromSoftware引擎dcx文件读写：
                     <Hyperlink NavigateUri="https://github.com/JKAnderson/SoulsFormats"
-                               RequestNavigate="Hyperlink_RequestNavigate">SoulsFormats</Hyperlink>
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        SoulsFormats
+                    </Hyperlink>
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     UI界面设计：
                     <Hyperlink NavigateUri="https://github.com/benruehl/adonis-ui"
-                               RequestNavigate="Hyperlink_RequestNavigate">adonis-ui</Hyperlink> （MIT License）
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        adonis-ui
+                    </Hyperlink>
+                    （MIT License）
                 </TextBlock>
                 <TextBlock Margin="16,0">
                     Excel表格文件读写:
                     <Hyperlink NavigateUri="https://github.com/nissl-lab/npoi"
-                               RequestNavigate="Hyperlink_RequestNavigate">npoi</Hyperlink>（Apache License Version 2.0）
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        npoi
+                    </Hyperlink>
+                    （Apache License Version 2.0）
                 </TextBlock>
-                
+
                 <TextBlock Margin="16,0">
                     简繁中文互互转:
                     <Hyperlink NavigateUri="https://github.com/CosineG/OpenCC.NET"
-                               RequestNavigate="Hyperlink_RequestNavigate">OpenCC.NET</Hyperlink> （Apache License Version 2.0）
+                               RequestNavigate="Hyperlink_RequestNavigate">
+                        OpenCC.NET
+                    </Hyperlink>
+                    （Apache License Version 2.0）
                 </TextBlock>
 
 

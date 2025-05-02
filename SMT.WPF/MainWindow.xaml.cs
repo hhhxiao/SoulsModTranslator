@@ -7,6 +7,7 @@ using Button = System.Windows.Controls.Button;
 using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
 using System.Diagnostics;
 using System.Windows.Navigation;
+using MathNet.Numerics.Optimization.TrustRegion;
 using NLog.Targets;
 using SMT.core;
 using Microsoft.VisualBasic.Logging;
@@ -139,12 +140,12 @@ namespace SMT.WPF
         //MAIN
         private void RefreshDBListUI()
         {
-
             Logger.Info($"数据库根目录：{DbPath}");
             if (!Directory.Exists(DbPath))
             {
                 return;
             }
+
             var files = Directory.GetFiles(DbPath);
             DbList = (from file in files where Path.GetExtension(file).Equals(".json") select Path.GetFileName(file))
                 .ToList();
@@ -244,7 +245,7 @@ namespace SMT.WPF
             var exportAsExcel = UseExcelCheckBox.IsChecked ?? false;
             var resort = AutoSortCheckBox.IsChecked ?? false;
             var markSource = MarkSourceCheckBox.IsChecked ?? false;
-
+            var split = MultiFileCheckBox.IsChecked ?? false;
             var dialog = new SaveFileDialog
             {
                 Filter = exportAsExcel ? "Excel表格文件(*.xlsx)|*" : "文本文件(*.txt)|*",
@@ -252,7 +253,8 @@ namespace SMT.WPF
             };
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
             var result = await Task.Run(() =>
-                TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, markSource, replaceNewLine, false));
+                TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, markSource, replaceNewLine, false,
+                    split));
             Logger.Info($"成功导出未翻译文本：{dialog.FileName}");
             ShowTaskResult(result, "导出成功", "导出失败");
         }
@@ -281,10 +283,11 @@ namespace SMT.WPF
 
             var dialog = new OpenFileDialog();
             dialog.Filter = "Excel 文件 (*.xlsx)|*.xlsx|文本文件 (*.txt)|*.txt";
+            dialog.Multiselect = true;
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
 
             var res = await Task.Run(() =>
-                Translator.Translate(modRootPath, dbPath, dialog.FileName, keepText, multiLang, false));
+                Translator.Translate(modRootPath, dbPath, dialog.FileNames, keepText, multiLang, false));
             ShowTaskResult(res, "生成成功", "生成失败");
         }
 
@@ -351,7 +354,6 @@ namespace SMT.WPF
 
         private async void CN2TWBtn_onClick(object sender, RoutedEventArgs e)
         {
-
             var inputPath = "";
             var outputPath = "";
             var inputDialog = new FolderBrowserDialog
@@ -370,7 +372,6 @@ namespace SMT.WPF
             outputPath = outputDialog.SelectedPath;
             var res = await Task.Run(() => LangFileSet.CNTWConvert("zhoTW", inputPath, outputPath));
             ShowTaskResult(res, "转换成功", "转换失败");
-
         }
 
         private async void TW2CNBtn_onClick(object sender, RoutedEventArgs e)

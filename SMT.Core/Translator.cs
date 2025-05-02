@@ -1,7 +1,7 @@
 using NLog;
 using SoulsFormats;
-namespace SMT.core;
 
+namespace SMT.core;
 
 /**
 
@@ -33,13 +33,9 @@ FS文件的组织架构
 文件自身的ID(局部)    -> fileID 根据文件名自动生成
 entry的ID(局部)     -> entryID 语言文件内部自带
 段落的ID(局部)      -> paraID 按照顺序1,2,3,4,... 段落ID是0时表示p1+p2...这一整个entry内的一段完整文本
-段落的ID(全局)      -> globalID =  fileID * MTID  +  (entryID*10 + paraID)  
+段落的ID(全局)      -> globalID =  fileID * MTID  +  (entryID*10 + paraID)
 
 **/
-
-
-
-
 public class ExportResult
 {
     public struct Item
@@ -92,12 +88,12 @@ public static class Translator
         DataBase dataBase, //db
         bool keepAsText, //keep as text
         Action<string, long, long, string> unTrans, //action for untranslated text
-    /**
-    string  filename
-    long    globalEntryId
-    long    globalParaID
-    long    text
-    */
+        /**
+        string  filename
+        long    globalEntryId
+        long    globalParaID
+        long    text
+        */
         Action<string, long, long, string, string> trans //action for translated text
     /**
     string  fileName
@@ -175,7 +171,7 @@ public static class Translator
     }
 
     public static bool Translate(string rootPath, string dbPath,
-        string translateFileName,
+        string[] translateFileNames,
         bool keepText,
         bool multiLang,
         bool useTrand
@@ -184,9 +180,8 @@ public static class Translator
         Logger.Info($"开始生成目标语言文件");
         Logger.Info($"msg根目录：{rootPath}");
         Logger.Info($"数据库路径：{dbPath}");
-        Logger.Info($"翻译文件路径：{translateFileName}");
+        Logger.Info($"翻译文件路径：");
         Logger.Info($"导出为繁体：{useTrand}");
-        // Logger.Info($"保持原始文本不分割：{keepText}");
         Logger.Info($"双语模式：{multiLang}");
         var langFile = new LangFileSet();
         var db = new DataBase();
@@ -196,9 +191,19 @@ public static class Translator
             return false;
         }
 
-        var translated = TextImporter.Import(translateFileName);
+        var translated = new Dictionary<long, string>();
+        foreach (var file in translateFileNames)
+        {
+            var dict = TextImporter.Import(file);
+            Logger.Info($" - 从 {file} 中读取 {dict.Count}条文本");
+            foreach (var kv in dict)
+            {
+                translated.TryAdd(kv.Key, kv.Value);
+            }
+        }
+
         var translateCache = new Dictionary<long, EntryCache>();
-        Logger.Info("已成功加载翻译文件");
+        Logger.Info($"已成功加载翻译文件, {translated.Count}条文本");
         langFile.ForeachEntryRead(CreateTraverser(db, keepText,
             (fileName, globalEntryId, globalParaId, src) =>
             {
@@ -225,7 +230,6 @@ public static class Translator
         langFile.ForeachEntryUpdate((string fileName, int fileId, string entry, int entryId) =>
         {
             if (LangFileSet.BlackFileList.Contains(Path.GetFileNameWithoutExtension(fileName))) return entry;
-            if (entry == null) return null;
             var globalEntryId = (long)fileId * LangFileSet.Mtid + (long)entryId;
             if (translateCache.TryGetValue(globalEntryId, out var dest))
             {
@@ -233,15 +237,11 @@ public static class Translator
                 {
                     return dest.Collect() + "\n" + entry;
                 }
-                else
-                {
-                    return dest.Collect();
-                }
+
+                return dest.Collect();
             }
-            else
-            {
-                Logger.Warn($"缺失文本翻译: {entryId}->{entry}");
-            }
+
+            Logger.Warn($"缺失文本翻译: {entryId}->{entry}");
             return null;
         });
         langFile.UpdateInterLang(Configuration.DestLangInterName);
