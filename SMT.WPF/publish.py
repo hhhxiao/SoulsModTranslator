@@ -1,4 +1,5 @@
 import os, zipfile
+import shutil
 
 publish_path = "./bin/Release/net7.0-windows/publish"
 
