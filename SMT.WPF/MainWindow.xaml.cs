@@ -22,7 +22,7 @@ namespace SMT.WPF
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.12";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.15";
 
         private static MemoryTarget MemoryTarget = new MemoryTarget
         {
@@ -246,6 +246,7 @@ namespace SMT.WPF
             var resort = AutoSortCheckBox.IsChecked ?? false;
             var markSource = MarkSourceCheckBox.IsChecked ?? false;
             var split = MultiFileCheckBox.IsChecked ?? false;
+            int maxLine = split ? (int)MaxLineSlider.Value : 10000000;
             var dialog = new SaveFileDialog
             {
                 Filter = exportAsExcel ? "Excel表格文件(*.xlsx)|*" : "文本文件(*.txt)|*",
@@ -254,7 +255,7 @@ namespace SMT.WPF
             if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
             var result = await Task.Run(() =>
                 TextExporter.Export(dialog.FileName, res, exportAsExcel, resort, markSource, replaceNewLine, false,
-                    split));
+                    maxLine));
             Logger.Info($"成功导出未翻译文本：{dialog.FileName}");
             ShowTaskResult(result, "导出成功", "导出失败");
         }

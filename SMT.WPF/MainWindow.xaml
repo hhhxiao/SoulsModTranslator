@@ -5,7 +5,7 @@
                              xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                              PlaceTitleBarOverContent="False"
                              Title="魂游MOD翻译工具v2.0"
-                             Height="670"
+                             Height="700"
                              Width="840"
                              FontSize="14"
                              ShrinkTitleBarWhenMaximized="True">
@@ -135,6 +135,7 @@
                         <RowDefinition Height="25"></RowDefinition>
                         <RowDefinition Height="25"></RowDefinition>
                         <RowDefinition Height="25"></RowDefinition>
+                        <RowDefinition Height="25"></RowDefinition>
                     </Grid.RowDefinitions>
 
                     <Label Grid.Row="0"
@@ -174,8 +175,38 @@
                               Grid.Column="0"
                               Margin="3"
                               IsEnabled="True">
-                        文本过多时导出多个文件(>=50K行,仅限Excel)
+                        导出多个文件(>=50K行,仅限Excel)
                     </CheckBox>
+
+                    <Grid Name="MaxLineGrid"
+                          Grid.Row="6"
+                          Grid.Column="0"
+                          Margin="3"
+                          IsEnabled="{Binding IsChecked, ElementName=MultiFileCheckBox, Mode=OneWay}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="5*" />
+                        </Grid.ColumnDefinitions>
+                    <!-- 显示当前值 -->
+                    <TextBlock Name="MaxLineText"
+                            Grid.Column="0"
+                            Text="{Binding Value, ElementName=MaxLineSlider, StringFormat={}{0:N0}}"
+                            VerticalAlignment="Center"
+                            Margin="0,0,0,0"/>
+                    <Slider Name="MaxLineSlider"
+                            Grid.Column="1"
+                            Minimum="5000"
+                            Maximum="100000"
+                            SmallChange="5000"
+                            LargeChange="5000"
+                            TickFrequency="5000"
+                            Value="10000"
+                            IsSnapToTickEnabled="True"
+                            TickPlacement="BottomRight"/>
+                    </Grid>                
+
+
+
                     <Label Grid.Row="0"
                            Grid.Column="1">
                         翻译选项

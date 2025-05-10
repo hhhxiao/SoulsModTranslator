@@ -64,7 +64,7 @@ public static class TextExporter
 
 
     public static bool Export(string fileName, ExportResult exportResult, bool excel, bool resort, bool markSource,
-        bool replaceNewLine, bool compressed, bool splitMultiFile)
+        bool replaceNewLine, bool compressed, int maxLine)
     {
         Logger.Info("开始导出：" + fileName);
         Logger.Info($" - 导出句子条数:  {exportResult.SentenceList.Count}");
@@ -73,7 +73,7 @@ public static class TextExporter
         Logger.Info(" - 是否标注文本来源:  " + markSource);
         Logger.Info(" - 是否替换换行符:  " + replaceNewLine);
         Logger.Info(" - 是否压缩存储（未实装）:  " + compressed);
-        Logger.Info(" - 是否拆分存储:  " + splitMultiFile);
+        Logger.Info(" - 文本最大行数:  " + maxLine);
 
         if (resort)
         {
@@ -88,7 +88,7 @@ public static class TextExporter
             return true;
         }
 
-        var linePerFile = splitMultiFile ? MaxFileLine : exportResult.SentenceList.Count;
+        var linePerFile = maxLine;
         linePerFile = Math.Min(linePerFile, exportResult.SentenceList.Count);
 
         var beginIndex = 0;
