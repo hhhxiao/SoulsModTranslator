@@ -380,7 +380,7 @@
                 </TextBlock>
                 <TextBlock Margin="16,0"
                            TextWrapping="Wrap">
-                    本软件目前支持艾尔登法环，只狼和黑暗之魂3，采用GPL v3.0协议，所有代码完全开源。
+                    本软件目前支持艾尔登法环（包括黑夜君临），只狼和黑暗之魂3，采用GPL v3.0协议，所有代码完全开源。
                 </TextBlock>
                 <Label Margin="8"
                        VerticalContentAlignment="Center"
