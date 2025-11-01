@@ -216,11 +216,11 @@ public class LangFileSet
         {
             if (interLangName == "zhoCN")
             {
-                return ZhConverter.HantToHans(entry);
+                return ZhConverter.TWToHans(entry);
             }
             else if (interLangName == "zhoTW")
             {
-                return ZhConverter.HansToHant(entry);
+                return ZhConverter.HansToTW(entry);
             }
             return null;
         });
