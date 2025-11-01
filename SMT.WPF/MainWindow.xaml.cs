@@ -22,7 +22,7 @@ namespace SMT.WPF
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.16";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.16.1";
 
         private static MemoryTarget MemoryTarget = new MemoryTarget
         {
