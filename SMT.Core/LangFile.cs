@@ -7,7 +7,7 @@ namespace SMT.core;
 public class LangFileSet
 {
     private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    public const long Mtid = 100000000;
+    public const long Mtid = 10000000000;
 
     public static readonly List<string> BlackFileList = new()
     {
