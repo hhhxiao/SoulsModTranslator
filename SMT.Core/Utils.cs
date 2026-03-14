@@ -37,15 +37,22 @@ public static class Utils
 
     public static void BackupFileOrDir(string path)
     {
-        if (File.Exists(path))
+        try
         {
-            File.Move(path, path + "." + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
+            if (File.Exists(path))
+            {
+                File.Move(path, path + "." + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds());
+            }
+            else if (Directory.Exists(path))
+            {
+                var newPath = path + "." + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+                Directory.Move(path, newPath);
+                Logger.Info($"备份: {path} -> {newPath}");
+            }
         }
-        else if (Directory.Exists(path))
+        catch (Exception e)
         {
-            var newPath = path + "." + new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
-            Directory.Move(path, newPath);
-            Logger.Info($"备份: {path} -> {newPath}");
+            Logger.Warn("无法备份原有文件", e);
         }
     }
 
