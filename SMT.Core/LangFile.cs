@@ -35,7 +35,6 @@ public class LangFileSet
         }
 
         Logger.Info($"语言文件的目录为: {langRootPath}");
-        var fmgFileIdSet = new HashSet<int>();
         //找到所有的bnd文件并编号
         var info = new DirectoryInfo(langRootPath);
         foreach (var bndFile in info.GetFiles())
@@ -46,14 +45,6 @@ public class LangFileSet
             try
             {
                 var bnd = BND4.Read(Path.Combine(langRootPath, bndFile.Name));
-                // if (bnd.Files.Any(fmgFile => !fmgFileIdSet.Add(fmgFile.ID)))
-                // {
-                //     Logger.Error($"发现重复的FMG语言文件，文件夹{langRootPath}中是否存在与{bndFile.Name}相同的dcx" +
-                //                  $"文件(比如黑暗之魂III和艾尔登法环)请根据需求删除(或修改后缀名)其中一个");
-                //     Logger.Error($"推荐做法为新建文件夹并将除了item_dlc02.msgbnd.dcx以及menu_dlc02.msgbnd.dcx之外的dcx文件移动到该文件夹内");
-                //     return false;
-                // }
-
                 Bnds[bndFile.Name] = bnd;
             }
             catch (Exception e)
@@ -214,15 +205,7 @@ public class LangFileSet
         ZhConverter.Initialize();
         langFile.ForeachEntryUpdate((string file, int fileId, string entry, int entryId) =>
         {
-            if (interLangName == "zhoCN")
-            {
-                return ZhConverter.TWToHans(entry);
-            }
-            else if (interLangName == "zhoTW")
-            {
-                return ZhConverter.HansToTW(entry);
-            }
-            return null;
+            return interLangName == "zhoCN" ? ZhConverter.TWToHans(entry) : ZhConverter.HansToTW(entry);
         });
 
         return langFile.SaveTo(descPath);

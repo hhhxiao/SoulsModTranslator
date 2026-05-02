@@ -11,7 +11,7 @@ public static class TextImporter
         var result = new Dictionary<long, string>();
         try
         {
-            var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
             var workbook = new XSSFWorkbook(fs);
             var sheet = workbook.GetSheetAt(0);
             if (sheet != null)

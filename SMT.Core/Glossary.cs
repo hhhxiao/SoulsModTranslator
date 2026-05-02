@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using NLog;
@@ -17,6 +16,7 @@ public class Glossary
     private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
     private Regex? _phaseRegex;
     private IOrderedEnumerable<KeyValuePair<string, string>>? _orderedPhaseDict;
+    private Dictionary<string, string>? _phaseLookup;
 
     private readonly List<RegexMatchRule> _normalRegexList = new();
 
@@ -75,6 +75,7 @@ public class Glossary
 
         //排序，优先替换更长的短语组
         _orderedPhaseDict = phaseKv.OrderByDescending(kv => kv.Key.Length); //先匹配字符串
+        _phaseLookup = new Dictionary<string, string>(phaseKv);
         //构建字符替换的正则,\b(p1|p2|p3....)按照单词边界匹配，排序是为了优先匹配长的
         var phasePattern = @"\b(" + string.Join("|", _orderedPhaseDict.Select(kv => Regex.Escape(kv.Key))) + @")\b";
         this._phaseRegex = new Regex(phasePattern, _ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
@@ -82,10 +83,10 @@ public class Glossary
         try
         {
             foreach (var rule in regexKv.Select(regexString => new RegexMatchRule
-                     {
-                         Regex = new Regex(regexString.Key, _ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None),
-                         Replacement = regexString.Value,
-                     }))
+            {
+                Regex = new Regex(regexString.Key, _ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None),
+                Replacement = regexString.Value,
+            }))
             {
                 _normalRegexList.Add(rule);
             }
@@ -96,7 +97,6 @@ public class Glossary
         }
 
         Logger.Info($"共发现{phaseKv.Count} 个短语以及 {_normalRegexList.Count}个正则表达式");
-        Logger.Debug($"{phaseKv.ToArray()[0].Key}");
         return true;
     }
 
@@ -107,14 +107,12 @@ public class Glossary
             {
                 var key = match.Value;
                 if (this._ignoreCase) key = key.ToLower(); //如果是忽视大小写模式，则根据小写进行查询，这里和上面的做统一
-                if (_orderedPhaseDict == null) return key;
-                var dictEntry = _orderedPhaseDict.FirstOrDefault(kv => key.Equals(kv.Key));
-                return dictEntry.Value ?? "[ERROR KEY]";
+                return _phaseLookup != null && _phaseLookup.TryGetValue(key, out var value) ? value : "[ERROR KEY]";
             }
         ) ?? input;
         //然后遍历每一个正则进行替换和匹配
         output = _normalRegexList.Aggregate(output,
-            (current, rule) => rule.Regex?.Replace(current ?? input, match => rule.Replacement) ?? string.Empty);
+            (current, rule) => rule.Regex?.Replace(current, match => rule.Replacement) ?? string.Empty);
         return output;
     }
 

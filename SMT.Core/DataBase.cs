@@ -11,29 +11,10 @@ public class DataBase
 
     public void Save(string dbPath)
     {
-        var simple = new Dictionary<string, string>();
-        var complex = new Dictionary<string, Dictionary<int, string>>();
+        var toSave = new Dictionary<string, object>();
         foreach (var (k, v) in _dbData)
         {
-            if (v.Count == 1)
-            {
-                simple.Add(k, v.Values.First());
-            }
-            else
-            {
-                complex.Add(k, v);
-            }
-        }
-
-        var toSave = new Dictionary<string, object>();
-        foreach (var (k, v) in simple)
-        {
-            toSave.Add(k, v);
-        }
-
-        foreach (var (k, v) in complex)
-        {
-            toSave.Add(k, v);
+            toSave.Add(k, v.Count == 1 ? v.Values.First() : v);
         }
 
         DebugPrint();
@@ -69,10 +50,10 @@ public class DataBase
             return false;
         }
 
-        var toSave = Utils.LoadJsonToObject<Dictionary<string, JsonElement>>(dbPath)
+        var data = Utils.LoadJsonToObject<Dictionary<string, JsonElement>>(dbPath)
                      ?? new Dictionary<string, JsonElement>();
-        Logger.Debug($"{toSave.Count}");
-        foreach (var (k, v) in toSave)
+        Logger.Debug($"{data.Count}");
+        foreach (var (k, v) in data)
         {
             switch (v.ValueKind)
             {
@@ -90,14 +71,6 @@ public class DataBase
                         _dbData.TryAdd(k, subDict);
                         break;
                     }
-                case JsonValueKind.Undefined:
-                case JsonValueKind.Array:
-                case JsonValueKind.Number:
-                case JsonValueKind.True:
-                case JsonValueKind.False:
-                case JsonValueKind.Null:
-                default:
-                    break;
             }
         }
 

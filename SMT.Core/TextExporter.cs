@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using NLog;
-using NPOI.SS.Formula.Functions;
 using NPOI.XSSF.UserModel;
-using SoulsFormats;
 
 namespace SMT.core;
 
@@ -72,7 +70,6 @@ public static class TextExporter
         Logger.Info(" - 是否重排:  " + resort);
         Logger.Info(" - 是否标注文本来源:  " + markSource);
         Logger.Info(" - 是否替换换行符:  " + replaceNewLine);
-        Logger.Info(" - 是否压缩存储（未实装）:  " + compressed);
         Logger.Info(" - 文本最大行数:  " + maxLine);
 
         if (resort)
@@ -88,8 +85,7 @@ public static class TextExporter
             return true;
         }
 
-        var linePerFile = maxLine;
-        linePerFile = Math.Min(linePerFile, exportResult.SentenceList.Count);
+        var linePerFile = Math.Min(maxLine, exportResult.SentenceList.Count);
 
         var beginIndex = 0;
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);

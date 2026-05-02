@@ -181,7 +181,6 @@ public static class Translator
         Logger.Info($"msg根目录：{rootPath}");
         Logger.Info($"数据库路径：{dbPath}");
         Logger.Info($"翻译文件路径：");
-        Logger.Info($"导出为繁体：{useTrand}");
         Logger.Info($"双语模式：{multiLang}");
         var langFile = new LangFileSet();
         var db = new DataBase();

@@ -5,8 +5,8 @@
                              xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
                              PlaceTitleBarOverContent="False"
                              Title="魂游MOD翻译工具v2.0"
-                             Height="700"
-                             Width="840"
+                             Height="750"
+                             Width="1000"
                              FontSize="14"
                              ShrinkTitleBarWhenMaximized="True">
 
@@ -115,178 +115,366 @@
                     </CheckBox>
                 </Grid>
 
+                <StackPanel Orientation="Horizontal" Margin="2">
+                    <Button Name="ManualModeBtn"
+                            Content="手动翻译"
+                            Padding="16,4"
+                            MinWidth="100"
+                            Click="ManualModeBtn_OnClick"
+                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}" />
+                    <Button Name="AiModeBtn"
+                            Content="AI 翻译"
+                            Padding="16,4"
+                            MinWidth="100"
+                            Margin="8,0,0,0"
+                            Click="AiModeBtn_OnClick" />
+                </StackPanel>
 
-                <Label Margin="8"
-                       VerticalContentAlignment="Center"
-                       FontSize="20"
-                       FontWeight="Normal">
-                    生成
-                </Label>
-
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="25"></RowDefinition>
-                    </Grid.RowDefinitions>
-
-                    <Label Grid.Row="0"
-                           Grid.Column="0">
-                        导出选项
+                <StackPanel Name="ManualTranslatePanel">
+                    <Label Margin="8"
+                           VerticalContentAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Normal">
+                        生成
                     </Label>
 
-                    <CheckBox Name="UseExcelCheckBox"
-                              Grid.Row="1"
-                              Grid.Column="0"
-                              Margin="2">
-                        导出为.xlsx格式
-                    </CheckBox>
-                    <CheckBox Name="AutoSortCheckBox"
-                              Grid.Row="2"
-                              Grid.Column="0"
-                              Margin="2"
-                              IsEnabled="True">
-                        自动排序导出文本(启用术语表时有效)
-                    </CheckBox>
-                    <CheckBox Name="MarkSourceCheckBox"
-                              Grid.Row="3"
-                              Grid.Column="0"
-                              Margin="2"
-                              IsEnabled="True">
-                        在编号后注明文本所属文件(仅限txt)
-                    </CheckBox>
-                    <CheckBox Name="MarkNewLineCheckBox"
-                              Grid.Row="4"
-                              Grid.Column="0"
-                              Margin="2"
-                              IsEnabled="True">
-                        使用特殊字符[@]替换换行(机翻请勾选)
-                    </CheckBox>
-                    <CheckBox Name="MultiFileCheckBox"
-                              Grid.Row="5"
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="25"></RowDefinition>
+                        </Grid.RowDefinitions>
+
+                        <Label Grid.Row="0"
+                               Grid.Column="0">
+                            导出选项
+                        </Label>
+
+                        <CheckBox Name="UseExcelCheckBox"
+                                  Grid.Row="1"
+                                  Grid.Column="0"
+                                  Margin="2">
+                            导出为.xlsx格式
+                        </CheckBox>
+                        <CheckBox Name="AutoSortCheckBox"
+                                  Grid.Row="2"
+                                  Grid.Column="0"
+                                  Margin="2"
+                                  IsEnabled="True">
+                            自动排序导出文本(启用术语表时有效)
+                        </CheckBox>
+                        <CheckBox Name="MarkSourceCheckBox"
+                                  Grid.Row="3"
+                                  Grid.Column="0"
+                                  Margin="2"
+                                  IsEnabled="True">
+                            在编号后注明文本所属文件(仅限txt)
+                        </CheckBox>
+                        <CheckBox Name="MarkNewLineCheckBox"
+                                  Grid.Row="4"
+                                  Grid.Column="0"
+                                  Margin="2"
+                                  IsEnabled="True">
+                            使用特殊字符[@]替换换行(机翻请勾选)
+                        </CheckBox>
+                        <CheckBox Name="MultiFileCheckBox"
+                                  Grid.Row="5"
+                                  Grid.Column="0"
+                                  Margin="3"
+                                  IsEnabled="True">
+                            导出多个文件(>=50K行,仅限Excel)
+                        </CheckBox>
+
+                        <Grid Name="MaxLineGrid"
+                              Grid.Row="6"
                               Grid.Column="0"
                               Margin="3"
-                              IsEnabled="True">
-                        导出多个文件(>=50K行,仅限Excel)
-                    </CheckBox>
+                              IsEnabled="{Binding IsChecked, ElementName=MultiFileCheckBox, Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="5*" />
+                            </Grid.ColumnDefinitions>
+                            <!-- 显示当前值 -->
+                            <TextBlock Name="MaxLineText"
+                                   Grid.Column="0"
+                                   Text="{Binding Value, ElementName=MaxLineSlider, StringFormat={}{0:N0}}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,0,0"/>
+                            <Slider Name="MaxLineSlider"
+                                   Grid.Column="1"
+                                   Minimum="5000"
+                                   Maximum="100000"
+                                   SmallChange="5000"
+                                   LargeChange="5000"
+                                   TickFrequency="5000"
+                                   Value="10000"
+                                   IsSnapToTickEnabled="True"
+                                   TickPlacement="BottomRight"/>
+                        </Grid>
 
-                    <Grid Name="MaxLineGrid"
-                          Grid.Row="6"
-                          Grid.Column="0"
-                          Margin="3"
-                          IsEnabled="{Binding IsChecked, ElementName=MultiFileCheckBox, Mode=OneWay}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*" />
-                            <ColumnDefinition Width="5*" />
-                        </Grid.ColumnDefinitions>
-                    <!-- 显示当前值 -->
-                    <TextBlock Name="MaxLineText"
-                            Grid.Column="0"
-                            Text="{Binding Value, ElementName=MaxLineSlider, StringFormat={}{0:N0}}"
-                            VerticalAlignment="Center"
-                            Margin="0,0,0,0"/>
-                    <Slider Name="MaxLineSlider"
-                            Grid.Column="1"
-                            Minimum="5000"
-                            Maximum="100000"
-                            SmallChange="5000"
-                            LargeChange="5000"
-                            TickFrequency="5000"
-                            Value="10000"
-                            IsSnapToTickEnabled="True"
-                            TickPlacement="BottomRight"/>
-                    </Grid>                
-
-
-
-                    <Label Grid.Row="0"
-                           Grid.Column="1">
-                        翻译选项
+                        <Label Grid.Row="0"
+                               Grid.Column="1">
+                            翻译选项
+                        </Label>
+                        <CheckBox Name="MultiLangCheckBox"
+                                  Grid.Row="1"
+                                  Grid.Column="1"
+                                  Margin="2">
+                            生成中英双语样式
+                        </CheckBox>
+                    </Grid>
+                    <Label Margin="8"
+                           VerticalContentAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Normal">
+                        术语表
                     </Label>
-                    <CheckBox Name="MultiLangCheckBox"
-                              Grid.Row="1"
-                              Grid.Column="1"
-                              Margin="2">
-                        生成中英双语样式
-                    </CheckBox>
-                </Grid>
-                <Label Margin="8"
-                       VerticalContentAlignment="Center"
-                       FontSize="20"
-                       FontWeight="Normal">
-                    术语表
-                </Label>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="25"></RowDefinition>
-                        <RowDefinition Height="36"></RowDefinition>
-                        <RowDefinition Height="140"></RowDefinition>
-                    </Grid.RowDefinitions>
-                    <CheckBox Name="UseGlossaryCheckBox"
-                              Grid.Row="0"
-                              Grid.Column="0"
-                              Margin="2">
-                        启用术语表
-                    </CheckBox>
-                    <CheckBox Name="IgnoreCaseCheckBox"
-                              Grid.Row="0"
-                              Grid.Column="1"
-                              Margin="2">
-                        匹配时忽视大小写
-                    </CheckBox>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="25"></RowDefinition>
+                            <RowDefinition Height="36"></RowDefinition>
+                            <RowDefinition Height="140"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <CheckBox Name="UseGlossaryCheckBox"
+                                  Grid.Row="0"
+                                  Grid.Column="0"
+                                  Margin="2">
+                            启用术语表
+                        </CheckBox>
+                        <CheckBox Name="IgnoreCaseCheckBox"
+                                  Grid.Row="0"
+                                  Grid.Column="1"
+                                  Margin="2">
+                            匹配时忽视大小写
+                        </CheckBox>
 
-                    <Button Margin="2"
-                            Grid.Row="1"
-                            Grid.Column="0"
-                            Click="GlossaryAdd_onClick">
-                        添加术语表
-                    </Button>
-                    <Button Margin="2"
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            Click="GlossaryRemove_onClick">
-                        删除选中术语表
-                    </Button>
-                    <ListBox Margin="2"
-                             SelectionMode="Extended"
-                             Name="GlossaryListBox"
-                             Grid.Row="2"
-                             Grid.Column="0"
-                             Grid.ColumnSpan="2">
-                    </ListBox>
-                </Grid>
+                        <Button Margin="2"
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Click="GlossaryAdd_onClick">
+                            添加术语表
+                        </Button>
+                        <Button Margin="2"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Click="GlossaryRemove_onClick">
+                            删除选中术语表
+                        </Button>
+                        <ListBox Margin="2"
+                                 SelectionMode="Extended"
+                                 Name="GlossaryListBox"
+                                 Grid.Row="2"
+                                 Grid.Column="0"
+                                 Grid.ColumnSpan="2">
+                        </ListBox>
+                    </Grid>
 
+                    <StackPanel Orientation="Horizontal"
+                                FlowDirection="RightToLeft"
+                                Height="50">
+                        <Button Name="GenerateBtn"
+                                Click="GenerateBtn_onClick"
+                                Margin="2"
+                                Width="120"
+                                Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                            生成翻译文件
+                        </Button>
+                        <Button Name="ExportBtn"
+                                Click="ExportBtn_onClick"
+                                Margin="2"
+                                Width="120"
+                                Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                            导出未翻译文本
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
 
-                <StackPanel Orientation="Horizontal"
-                            FlowDirection="RightToLeft"
-                            Height="50">
-                    <Button Name="GenerateBtn"
-                            Click="GenerateBtn_onClick"
-                            Margin="2"
-                            Width="120"
-                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
-                        生成翻译文件
-                    </Button>
-                    <Button Name="ExportBtn"
-                            Click="ExportBtn_onClick"
-                            Margin="2"
-                            Width="120"
-                            Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
-                        导出未翻译文本
-                    </Button>
+                <StackPanel Name="AiTranslatePanel"
+                            Visibility="Collapsed">
+                    <Label Margin="8"
+                           VerticalContentAlignment="Center"
+                           FontSize="20"
+                           FontWeight="Normal">
+                        AI 翻译设置
+                    </Label>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="40" />
+                            <RowDefinition Height="120" />
+                            <RowDefinition Height="50" />
+                        </Grid.RowDefinitions>
+
+                        <!-- 第1行：提供商 + 模型名称 -->
+                        <Label Grid.Row="0"
+                               Grid.Column="0"
+                               Margin="4"
+                               VerticalContentAlignment="Center"
+                               FontWeight="Normal">
+                            提供商
+                        </Label>
+                        <ComboBox Grid.Row="0"
+                                  Grid.Column="1"
+                                  Margin="4"
+                                  Name="ProviderComboBox"
+                                  VerticalContentAlignment="Center"
+                                  IsReadOnly="True">
+                            <ComboBoxItem IsSelected="True">deepseek</ComboBoxItem>
+                        </ComboBox>
+                        <Label Grid.Row="0"
+                               Grid.Column="2"
+                               Margin="4"
+                               VerticalContentAlignment="Center"
+                               FontWeight="Normal">
+                            模型名称
+                        </Label>
+                        <TextBox Grid.Row="0"
+                                 Grid.Column="3"
+                                 Margin="4"
+                                 Name="ModelNameTextBox"
+                                 VerticalContentAlignment="Center"
+                                 MaxLines="1">
+                        </TextBox>
+
+                        <!-- 第2行：Base URL -->
+                        <Label Grid.Row="1"
+                               Grid.Column="0"
+                               Margin="4"
+                               VerticalContentAlignment="Center"
+                               FontWeight="Normal">
+                            Base URL
+                        </Label>
+                        <TextBox Grid.Row="1"
+                                 Grid.Column="1"
+                                 Grid.ColumnSpan="3"
+                                 Margin="4"
+                                 Name="BaseUrlTextBox"
+                                 VerticalContentAlignment="Center"
+                                 MaxLines="1">
+                        </TextBox>
+
+                        <!-- 第3行：API 密钥 -->
+                        <Label Grid.Row="2"
+                               Grid.Column="0"
+                               Margin="4"
+                               VerticalContentAlignment="Center"
+                               FontWeight="Normal">
+                            API 密钥
+                        </Label>
+                        <TextBox Grid.Row="2"
+                                 Grid.Column="1"
+                                 Grid.ColumnSpan="3"
+                                 Margin="4"
+                                 Name="ApiKeyTextBox"
+                                 VerticalContentAlignment="Center"
+                                 MaxLines="1">
+                        </TextBox>
+
+                        <!-- 第4行：推理等级 + 深度思考 -->
+                        <Label Grid.Row="3"
+                               Grid.Column="0"
+                               Margin="4"
+                               VerticalContentAlignment="Center"
+                               FontWeight="Normal">
+                            推理等级
+                        </Label>
+                        <ComboBox Grid.Row="3"
+                                  Grid.Column="1"
+                                  Margin="4"
+                                  Name="ReasoningEffortComboBox"
+                                  VerticalContentAlignment="Center">
+                            <ComboBoxItem>low</ComboBoxItem>
+                            <ComboBoxItem IsSelected="True">medium</ComboBoxItem>
+                            <ComboBoxItem>high</ComboBoxItem>
+                        </ComboBox>
+                        <CheckBox Grid.Row="3"
+                                  Grid.Column="2"
+                                  Grid.ColumnSpan="2"
+                                  Margin="4"
+                                  Name="DeepThinkCheckBox"
+                                  VerticalContentAlignment="Center">
+                            启用深度思考
+                        </CheckBox>
+
+                        <!-- 第5行：自定义提示词 -->
+                        <Label Grid.Row="4"
+                               Grid.Column="0"
+                               Margin="4"
+                               VerticalContentAlignment="Top"
+                               FontWeight="Normal">
+                            自定义提示词
+                        </Label>
+                        <TextBox Grid.Row="4"
+                                 Grid.Column="1"
+                                 Grid.ColumnSpan="3"
+                                 Margin="4"
+                                 Name="CustomPromptTextBox"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto">
+                        </TextBox>
+
+                        <!-- 第6行：操作按钮 -->
+                        <StackPanel Grid.Row="5"
+                                    Grid.Column="1"
+                                    Grid.ColumnSpan="3"
+                                    Orientation="Horizontal"
+                                    Margin="4">
+                            <Button Width="100"
+                                    Height="36"
+                                    Margin="0,0,8,0"
+                                    Name="TestApiBtn"
+                                    Click="TestApiBtn_OnClick"
+                                    Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                                测试连接
+                            </Button>
+                            <Button Width="100"
+                                    Height="36"
+                                    Margin="0,0,8,0"
+                                    Name="SaveConfigBtn"
+                                    Click="SaveConfigBtn_OnClick">
+                                保存配置
+                            </Button>
+                            <Button Width="100"
+                                    Height="36"
+                                    Margin="0,0,8,0"
+                                    Name="LoadConfigBtn"
+                                    Click="LoadConfigBtn_OnClick">
+                                加载配置
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal"
+                                FlowDirection="RightToLeft"
+                                Height="50">
+                        <Button Name="AiTranslateBtn"
+                                Width="120"
+                                Margin="2"
+                                Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                            AI 翻译
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
 

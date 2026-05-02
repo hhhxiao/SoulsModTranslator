@@ -3,15 +3,12 @@ using System.Collections.ObjectModel;
 using NLog;
 using System.IO;
 using AdonisUI.Controls;
+using AdonisUI;
 using Button = System.Windows.Controls.Button;
 using MessageBoxImage = AdonisUI.Controls.MessageBoxImage;
-using System.Diagnostics;
 using System.Windows.Navigation;
-using MathNet.Numerics.Optimization.TrustRegion;
 using NLog.Targets;
 using SMT.core;
-using Microsoft.VisualBasic.Logging;
-using Org.BouncyCastle.Bcpg.Sig;
 
 namespace SMT.WPF
 {
@@ -34,8 +31,9 @@ namespace SMT.WPF
         {
             if (success)
             {
-                AdonisUI.Controls.MessageBox.Show(success ? succMsg : failMsg, "提示",
+                AdonisUI.Controls.MessageBox.Show(succMsg, "提示",
                     AdonisUI.Controls.MessageBoxButton.OK, MessageBoxImage.Information);
+                MemoryTarget.Logs.Clear();
                 return;
             }
 
@@ -53,7 +51,7 @@ namespace SMT.WPF
                         AdonisUI.Controls.MessageBoxButtons.Custom("关闭", "close"),
                     },
             };
-            var result = AdonisUI.Controls.MessageBox.Show(messageBox);
+            AdonisUI.Controls.MessageBox.Show(messageBox);
             if (messageBox.Result == AdonisUI.Controls.MessageBoxResult.Custom)
             {
                 var prompt = "[请在这里礼貌且清晰地描述你遇到的问题。] 以下是错误消息和日志。\n";
@@ -116,6 +114,8 @@ namespace SMT.WPF
             Glossaries = new ObservableCollection<string>();
             GlossaryListBox.ItemsSource = Glossaries;
             RefreshDBListUI();
+            //加载 AI 配置
+            LoadAiConfig();
             //setup
             this.AllowDrop = true;
             SwitchTab("Translate");
@@ -124,6 +124,25 @@ namespace SMT.WPF
             if (DbList.Count != 0) return;
             ShowTaskResult(false, "", "找不到数据库文件，请检查软件完整性");
             this.Close();
+        }
+
+        //翻译模式切换
+        private void ManualModeBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            Logger.Info("切换到手动翻译");
+            ManualModeBtn.Style = (Style)FindResource(AdonisUI.Styles.AccentButton);
+            AiModeBtn.Style = null;
+            ManualTranslatePanel.Visibility = Visibility.Visible;
+            AiTranslatePanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void AiModeBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            Logger.Info("切换到 AI 翻译");
+            AiModeBtn.Style = (Style)FindResource(AdonisUI.Styles.AccentButton);
+            ManualModeBtn.Style = null;
+            ManualTranslatePanel.Visibility = Visibility.Collapsed;
+            AiTranslatePanel.Visibility = Visibility.Visible;
         }
 
 
@@ -199,6 +218,115 @@ namespace SMT.WPF
         }
 
 
+        //测试大模型连接
+        private async void TestApiBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            Logger.Info("测试大模型连接");
+            var baseUrl = BaseUrlTextBox.Text.Trim();
+            var key = ApiKeyTextBox.Text.Trim();
+            var modelName = ModelNameTextBox.Text.Trim();
+            var prompt = CustomPromptTextBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                Logger.Warn("Base URL 为空");
+                ShowTaskResult(false, "", "Base URL 不能为空");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(key))
+            {
+                Logger.Warn("API 密钥为空");
+                ShowTaskResult(false, "", "API 密钥不能为空");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(modelName))
+            {
+                Logger.Warn("模型名称为空");
+                ShowTaskResult(false, "", "模型名称不能为空");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                Logger.Warn("自定义提示词为空");
+                ShowTaskResult(false, "", "自定义提示词不能为空");
+                return;
+            }
+
+            Logger.Info("所有输入均不为空，开始测试 API 连接");
+
+            try
+            {
+                var reasoningEffort = ((System.Windows.Controls.ComboBoxItem)ReasoningEffortComboBox.SelectedItem)?.Content?.ToString() ?? "medium";
+                var enableDeepThink = DeepThinkCheckBox.IsChecked ?? false;
+
+                var result = await Task.Run(() =>
+                    AiClient.SendChatRequestAsync(baseUrl, key, modelName, prompt, reasoningEffort, enableDeepThink));
+
+                Logger.Info("API 测试成功");
+                ShowTaskResult(true, "API 连接成功！\n\n返回内容：\n" + result, "");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"API 测试失败: {ex.Message}");
+                ShowTaskResult(false, "", "API 测试失败：\n" + ex.Message);
+            }
+        }
+
+        private void SaveAiConfig()
+        {
+            var reasoningEffort = ((System.Windows.Controls.ComboBoxItem)ReasoningEffortComboBox.SelectedItem)?.Content?.ToString() ?? "medium";
+            var data = new AiConfigData
+            {
+                BaseUrl = BaseUrlTextBox.Text.Trim(),
+                ApiKey = ApiKeyTextBox.Text.Trim(),
+                ModelName = ModelNameTextBox.Text.Trim(),
+                ReasoningEffort = reasoningEffort,
+                EnableDeepThink = DeepThinkCheckBox.IsChecked ?? false,
+                CustomPrompt = CustomPromptTextBox.Text.Trim()
+            };
+            AiConfig.Save(data);
+        }
+
+        private void LoadAiConfig()
+        {
+            var data = AiConfig.Load();
+            BaseUrlTextBox.Text = data.BaseUrl;
+            ApiKeyTextBox.Text = data.ApiKey;
+            ModelNameTextBox.Text = data.ModelName;
+            CustomPromptTextBox.Text = data.CustomPrompt;
+            DeepThinkCheckBox.IsChecked = data.EnableDeepThink;
+            //设置推理等级选中项
+            foreach (var item in ReasoningEffortComboBox.Items)
+            {
+                if (item is System.Windows.Controls.ComboBoxItem comboItem &&
+                    comboItem.Content?.ToString() == data.ReasoningEffort)
+                {
+                    ReasoningEffortComboBox.SelectedItem = item;
+                    break;
+                }
+            }
+        }
+
+        private void SaveConfigBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            Logger.Info("手动保存 AI 配置");
+            SaveAiConfig();
+            Logger.Info("AI 配置已保存");
+            ShowTaskResult(true, "配置已保存", "");
+        }
+
+        private void LoadConfigBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            Logger.Info("手动加载 AI 配置");
+            LoadAiConfig();
+            Logger.Info("AI 配置已加载");
+            ShowTaskResult(true, "配置已加载", "");
+        }
+
+
         //导出未翻译文本
         private async void ExportBtn_onClick(object sender, RoutedEventArgs e)
         {
@@ -268,7 +396,6 @@ namespace SMT.WPF
             var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
             var keepText = DoNotSplitTextBox.IsChecked ?? false;
             var multiLang = MultiLangCheckBox.IsChecked ?? false;
-            // var useTrand = ExportAsTranditionalCheckBox.IsChecked ?? false;
 
             if (modRootPath.Length == 0)
             {
@@ -296,9 +423,6 @@ namespace SMT.WPF
         //db generation
         private async void ExportDbBtn_OnClick(object sender, RoutedEventArgs e)
         {
-            var keyPath = "";
-            var valuePath = "";
-            var savePath = "";
             var keyDialog = new FolderBrowserDialog
             {
                 Description = "选择源语言路径(engus)"
@@ -314,16 +438,10 @@ namespace SMT.WPF
                 FileName = "Untitled.json"
             };
 
-            var keyResult = keyDialog.ShowDialog();
-            if (keyResult != System.Windows.Forms.DialogResult.OK) return;
-            var valueResult = valueDialog.ShowDialog();
-            if (valueResult != System.Windows.Forms.DialogResult.OK) return;
-            var saveResult = saveDialog.ShowDialog();
-            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
-            valuePath = valueDialog.SelectedPath;
-            keyPath = keyDialog.SelectedPath;
-            savePath = saveDialog.FileName;
-            var res = await Task.Run(() => DataBase.CreateDb(keyPath, valuePath, savePath));
+            if (keyDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            if (valueDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            if (saveDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            var res = await Task.Run(() => DataBase.CreateDb(keyDialog.SelectedPath, valueDialog.SelectedPath, saveDialog.FileName));
             ShowTaskResult(res, "导出成功", "导出失败");
         }
 
@@ -340,67 +458,41 @@ namespace SMT.WPF
             var result = dialog.ShowDialog();
             if (result != System.Windows.Forms.DialogResult.OK) return;
             //save path
-            var savePath = "";
             var saveDialog = new SaveFileDialog
             {
                 Filter = "Json文件(*.json)|*",
                 FileName = "Untitled.json"
             };
-            var saveResult = saveDialog.ShowDialog();
-            if (saveResult != System.Windows.Forms.DialogResult.OK) return;
-            savePath = saveDialog.FileName;
-            var res = await Task.Run(() => DataBase.MergeDataBase(dialog.FileNames, savePath));
+            if (saveDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            var res = await Task.Run(() => DataBase.MergeDataBase(dialog.FileNames, saveDialog.FileName));
             ShowTaskResult(res, "合并成功", "合并失败");
         }
 
         private async void CN2TWBtn_onClick(object sender, RoutedEventArgs e)
         {
-            var inputPath = "";
-            var outputPath = "";
-            var inputDialog = new FolderBrowserDialog
-            {
-                Description = "选择简中语言文件路径(内含.msgbnd.dcx文件)"
-            };
-            var outputDialog = new FolderBrowserDialog
-            {
-                Description = "选择导出的繁中语言文件路径"
-            };
-            var inputResult = inputDialog.ShowDialog();
-            if (inputResult != System.Windows.Forms.DialogResult.OK) return;
-            var outputResult = outputDialog.ShowDialog();
-            if (outputResult != System.Windows.Forms.DialogResult.OK) return;
-            inputPath = inputDialog.SelectedPath;
-            outputPath = outputDialog.SelectedPath;
-            var res = await Task.Run(() => LangFileSet.CNTWConvert("zhoTW", inputPath, outputPath));
-            ShowTaskResult(res, "转换成功", "转换失败");
+            await ConvertCNTW("zhoTW", "选择简中语言文件路径(内含.msgbnd.dcx文件)",
+                "选择导出的繁中语言文件路径");
         }
 
         private async void TW2CNBtn_onClick(object sender, RoutedEventArgs e)
         {
-            var inputPath = "";
-            var outputPath = "";
-            var inputDialog = new FolderBrowserDialog
-            {
-                Description = "选择繁中语言文件路径(内含.msgbnd.dcx文件)"
-            };
-            var outputDialog = new FolderBrowserDialog
-            {
-                Description = "选择导出的简中语言文件路径"
-            };
-            var inputResult = inputDialog.ShowDialog();
-            if (inputResult != System.Windows.Forms.DialogResult.OK) return;
-            var outputResult = outputDialog.ShowDialog();
-            if (outputResult != System.Windows.Forms.DialogResult.OK) return;
-            inputPath = inputDialog.SelectedPath;
-            outputPath = outputDialog.SelectedPath;
-            var res = await Task.Run(() => LangFileSet.CNTWConvert("zhoCN", inputPath, outputPath));
+            await ConvertCNTW("zhoCN", "选择繁中语言文件路径(内含.msgbnd.dcx文件)",
+                "选择导出的简中语言文件路径");
+        }
+
+        private async Task ConvertCNTW(string targetLang, string inputDesc, string outputDesc)
+        {
+            var inputDialog = new FolderBrowserDialog { Description = inputDesc };
+            var outputDialog = new FolderBrowserDialog { Description = outputDesc };
+            if (inputDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            if (outputDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            var res = await Task.Run(() =>
+                LangFileSet.CNTWConvert(targetLang, inputDialog.SelectedPath, outputDialog.SelectedPath));
             ShowTaskResult(res, "转换成功", "转换失败");
         }
 
         private async void DumpLangFile_OnClick(object sender, RoutedEventArgs e)
         {
-            var inputPath = "";
-            var outputPath = "";
             var inputDialog = new FolderBrowserDialog
             {
                 Description = "选择源语言路径(engus，zhocn等)"
@@ -409,32 +501,17 @@ namespace SMT.WPF
             {
                 Description = "选择导出目录"
             };
-            var inputResult = inputDialog.ShowDialog();
-            if (inputResult != System.Windows.Forms.DialogResult.OK) return;
-            var outputResult = outputDialog.ShowDialog();
-            if (outputResult != System.Windows.Forms.DialogResult.OK) return;
-            inputPath = inputDialog.SelectedPath;
-            outputPath = outputDialog.SelectedPath;
+            if (inputDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            if (outputDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
 
-            var res = await Task.Run(() => LangFileSet.Dump(inputPath, outputPath));
+            var res = await Task.Run(() => LangFileSet.Dump(inputDialog.SelectedPath, outputDialog.SelectedPath));
             ShowTaskResult(res, "导出成功", "导出失败");
         }
 
         //About
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = e.Uri.AbsoluteUri,
-                    UseShellExecute = true
-                });
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Unable to open link: {ex.Message}");
-            }
+            Utils.OpenUrl(e.Uri.AbsoluteUri);
         }
     }
 }
