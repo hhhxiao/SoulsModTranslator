@@ -471,9 +471,16 @@
                         <Button Name="AiTranslateBtn"
                                 Width="120"
                                 Margin="2"
-                                Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}">
+                                Style="{DynamicResource {x:Static adonisUi:Styles.AccentButton}}"
+                                Click="AiTranslateBtn_OnClick">
                             AI 翻译
                         </Button>
+                        <CheckBox Name="ContinueTranslateCheckBox"
+                                  Margin="8,2,4,2"
+                                  VerticalContentAlignment="Center"
+                                  IsChecked="False">
+                            基于上次翻译结果继续
+                        </CheckBox>
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

@@ -103,6 +103,45 @@ namespace SMT.WPF
 
         private List<string> DbList = new List<string>();
 
+        private bool ValidateModPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path)) return true;
+            ShowTaskResult(false, "", "请先设置msg目录");
+            return false;
+        }
+
+        private bool ValidateDbPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path) && File.Exists(path)) return true;
+            ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
+            return false;
+        }
+
+        private bool ValidateAiConfig(AiConfigData config)
+        {
+            if (string.IsNullOrEmpty(config.BaseUrl))
+            {
+                ShowTaskResult(false, "", "请先设置 AI Base URL");
+                return false;
+            }
+            if (string.IsNullOrEmpty(config.ApiKey))
+            {
+                ShowTaskResult(false, "", "请先设置 AI API 密钥");
+                return false;
+            }
+            if (string.IsNullOrEmpty(config.ModelName))
+            {
+                ShowTaskResult(false, "", "请先设置 AI 模型名称");
+                return false;
+            }
+            if (string.IsNullOrEmpty(config.CustomPrompt))
+            {
+                ShowTaskResult(false, "", "请先设置 AI 自定义提示词");
+                return false;
+            }
+            return true;
+        }
+
         //初始化
         public MainWindow()
         {
@@ -222,40 +261,15 @@ namespace SMT.WPF
         private async void TestApiBtn_OnClick(object sender, RoutedEventArgs e)
         {
             Logger.Info("测试大模型连接");
-            var baseUrl = BaseUrlTextBox.Text.Trim();
-            var key = ApiKeyTextBox.Text.Trim();
-            var modelName = ModelNameTextBox.Text.Trim();
-            var prompt = CustomPromptTextBox.Text.Trim();
-
-            if (string.IsNullOrEmpty(baseUrl))
+            var config = new AiConfigData
             {
-                Logger.Warn("Base URL 为空");
-                ShowTaskResult(false, "", "Base URL 不能为空");
-                return;
-            }
+                BaseUrl = BaseUrlTextBox.Text.Trim(),
+                ApiKey = ApiKeyTextBox.Text.Trim(),
+                ModelName = ModelNameTextBox.Text.Trim(),
+                CustomPrompt = CustomPromptTextBox.Text.Trim()
+            };
 
-            if (string.IsNullOrEmpty(key))
-            {
-                Logger.Warn("API 密钥为空");
-                ShowTaskResult(false, "", "API 密钥不能为空");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(modelName))
-            {
-                Logger.Warn("模型名称为空");
-                ShowTaskResult(false, "", "模型名称不能为空");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(prompt))
-            {
-                Logger.Warn("自定义提示词为空");
-                ShowTaskResult(false, "", "自定义提示词不能为空");
-                return;
-            }
-
-            Logger.Info("所有输入均不为空，开始测试 API 连接");
+            if (!ValidateAiConfig(config)) return;
 
             try
             {
@@ -263,7 +277,7 @@ namespace SMT.WPF
                 var enableDeepThink = DeepThinkCheckBox.IsChecked ?? false;
 
                 var result = await Task.Run(() =>
-                    AiClient.SendChatRequestAsync(baseUrl, key, modelName, prompt, reasoningEffort, enableDeepThink));
+                    AiClient.SendChatRequestAsync(config.BaseUrl, config.ApiKey, config.ModelName, config.CustomPrompt, reasoningEffort, enableDeepThink));
 
                 Logger.Info("API 测试成功");
                 ShowTaskResult(true, "API 连接成功！\n\n返回内容：\n" + result, "");
@@ -334,17 +348,8 @@ namespace SMT.WPF
             var dbPath = Path.Combine(DbPath, DbList[DbComboBox.SelectedIndex]);
             var keepText = DoNotSplitTextBox.IsChecked ?? false;
             var replaceNewLine = MarkNewLineCheckBox.IsChecked ?? false;
-            if (modRootPath.Length == 0)
-            {
-                ShowTaskResult(false, "", "请先设置msg目录");
-                return;
-            }
-
-            if (dbPath.Length == 0)
-            {
-                ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
-                return;
-            }
+            if (!ValidateModPath(modRootPath)) return;
+            if (!ValidateDbPath(dbPath)) return;
 
             //导出未翻译文本
             var res = await Task.Run(() => Translator.Export(modRootPath, dbPath, keepText));
@@ -389,6 +394,150 @@ namespace SMT.WPF
         }
 
 
+        //AI 翻译
+        private async void AiTranslateBtn_OnClick(object sender, RoutedEventArgs e)
+        {
+            var modRootPath = ModPathTextBox.Text;
+            var dbPath = Path.Combine(DbPath, DbList.Count > 0 ? DbList[DbComboBox.SelectedIndex] : "");
+
+            if (!ValidateModPath(modRootPath)) return;
+            if (!ValidateDbPath(dbPath)) return;
+
+            Logger.Info("AI 翻译开始：导出未翻译文本");
+            var keepText = DoNotSplitTextBox.IsChecked ?? false;
+            var res = await Task.Run(() => Translator.Export(modRootPath, dbPath, keepText));
+            if (!res.Success)
+            {
+                ShowTaskResult(false, "", "导出未翻译文本失败");
+                return;
+            }
+
+            Logger.Info($"导出成功，共 {res.SentenceList.Count} 条待翻译文本");
+
+            // 基于上次翻译结果继续
+            if (ContinueTranslateCheckBox.IsChecked == true)
+            {
+                var openDialog = new OpenFileDialog
+                {
+                    Filter = "JSON 文件(*.json)|*.json",
+                    FileName = "translated.json"
+                };
+                if (openDialog.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+
+                var prevResult = Utils.LoadJsonToObject<ExportResult>(openDialog.FileName);
+                if (prevResult == null)
+                {
+                    ShowTaskResult(false, "", "无法加载上次翻译结果文件");
+                    return;
+                }
+
+                var prevIds = new HashSet<long>(prevResult.SentenceList.Select(i => i.GlobalId));
+                foreach (var item in res.SentenceList)
+                {
+                    if (prevIds.Contains(item.GlobalId))
+                        res.TranslatedIds.Add(item.GlobalId);
+                }
+
+                Logger.Info($"基于上次翻译结果，已标记 {res.TranslatedIds.Count} 条已翻译文本，仍需翻译 {res.SentenceList.Count - res.TranslatedIds.Count} 条");
+            }
+
+            var config = new AiConfigData
+            {
+                BaseUrl = BaseUrlTextBox.Text.Trim(),
+                ApiKey = ApiKeyTextBox.Text.Trim(),
+                ModelName = ModelNameTextBox.Text.Trim(),
+                ReasoningEffort =
+                    ((System.Windows.Controls.ComboBoxItem)ReasoningEffortComboBox.SelectedItem)?.Content?.ToString() ??
+                    "medium",
+                EnableDeepThink = DeepThinkCheckBox.IsChecked ?? false,
+                CustomPrompt = CustomPromptTextBox.Text.Trim()
+            };
+
+            if (!ValidateAiConfig(config)) return;
+
+            Logger.Info("开始调用 AI 翻译");
+            SaveAiConfig();
+
+            // 弹出进度窗口
+            var progressWindow = new ProgressWindow
+            {
+                Owner = this
+            };
+            progressWindow.Show();
+
+            try
+            {
+                var progress = new Progress<TranslationProgress>(p => progressWindow.Report(p));
+                var token = progressWindow.CancellationTokenSource.Token;
+                var (success, translated) = await Task.Run(
+                    () => AiClient.TranslateWithAiAsync(res, config, progress, token), token);
+                CloseProgressWindowSafely(progressWindow);
+                Activate();
+
+                if (success)
+                {
+                    ShowTaskResult(true, "AI 翻译完成", "");
+                }
+                else if (translated.SentenceList.Count > 0)
+                {
+                    // 部分完成，询问是否保存
+                    var saveResult = AdonisUI.Controls.MessageBox.Show(
+                        $"已取消翻译，已翻译 {translated.SentenceList.Count} 条，临时结果不会丢失。是否保存已翻译的内容？",
+                        "保存已翻译内容",
+                        AdonisUI.Controls.MessageBoxButton.YesNo,
+                        AdonisUI.Controls.MessageBoxImage.Question);
+
+                    if (saveResult == AdonisUI.Controls.MessageBoxResult.Yes)
+                    {
+                        var dialog = new SaveFileDialog
+                        {
+                            Filter = "JSON 文件(*.json)|*.json",
+                            FileName = "translated.json"
+                        };
+                        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        {
+                            try
+                            {
+                                Utils.SaveObjectAsJson(translated, dialog.FileName);
+                                Logger.Info($"已保存已翻译内容至：{dialog.FileName}");
+                                ShowTaskResult(true, "已保存", "");
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error($"保存已翻译内容失败: {ex.Message}");
+                                ShowTaskResult(false, "", "保存失败：" + ex.Message);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    ShowTaskResult(false, "", "AI 翻译失败");
+                }
+            }
+            catch (Exception ex)
+            {
+                CloseProgressWindowSafely(progressWindow);
+                Activate();
+                Logger.Error($"AI 翻译异常: {ex.Message}");
+                ShowTaskResult(false, "", "AI 翻译异常：" + ex.Message);
+            }
+        }
+
+        private static void CloseProgressWindowSafely(ProgressWindow w)
+        {
+            try
+            {
+                w.AllowClosingWithoutConfirm = true;
+                if (w.IsVisible) w.Close();
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+
         //生成新的文本文件
         private async void GenerateBtn_onClick(object sender, RoutedEventArgs e)
         {
@@ -397,17 +546,8 @@ namespace SMT.WPF
             var keepText = DoNotSplitTextBox.IsChecked ?? false;
             var multiLang = MultiLangCheckBox.IsChecked ?? false;
 
-            if (modRootPath.Length == 0)
-            {
-                ShowTaskResult(false, "", "请先设置msg目录");
-                return;
-            }
-
-            if (dbPath.Length == 0)
-            {
-                ShowTaskResult(false, "", "数据库为空，请检查软件完整性");
-                return;
-            }
+            if (!ValidateModPath(modRootPath)) return;
+            if (!ValidateDbPath(dbPath)) return;
 
             var dialog = new OpenFileDialog();
             dialog.Filter = "Excel 文件 (*.xlsx)|*.xlsx|文本文件 (*.txt)|*.txt";

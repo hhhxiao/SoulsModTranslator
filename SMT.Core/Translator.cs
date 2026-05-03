@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using NLog;
 using SoulsFormats;
 
@@ -45,8 +46,10 @@ public class ExportResult
         public string FileName { get; init; }
     }
 
-    public bool Success = false;
-    public List<Item> SentenceList = new();
+    public bool Success { get; set; } = false;
+    public List<Item> SentenceList { get; set; } = new();
+    [JsonIgnore]
+    public HashSet<long> TranslatedIds { get; set; } = new();
 
     public void AddSentence(long id, string text, string file)
     {

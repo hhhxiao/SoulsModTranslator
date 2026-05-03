@@ -104,4 +104,73 @@ public static class AiClient
         Logger.Info("成功提取文本内容");
         return contentText;
     }
+
+    /// <summary>
+    /// 使用 AI 翻译导出数据
+    /// </summary>
+    /// <param name="exportResult">导出结果（含待翻译文本列表）</param>
+    /// <param name="config">AI 配置（URL、密钥、模型、提示词等）</param>
+    /// <param name="progress">进度报告回调</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>(是否全部完成, 已翻译的词条列表)</returns>
+    public static async Task<(bool Success, ExportResult Translated)> TranslateWithAiAsync(
+        ExportResult exportResult, AiConfigData config,
+        IProgress<TranslationProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        var total = exportResult.SentenceList.Count;
+        var alreadyTranslated = exportResult.TranslatedIds.Count;
+        Logger.Info($"AI 翻译开始，共 {total} 条词条，其中 {alreadyTranslated} 条已标记为已翻译");
+        var translated = new ExportResult();
+
+        for (var i = 0; i < total; i++)
+        {
+            try
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    Logger.Warn($"AI 翻译被用户取消，已翻译 {translated.SentenceList.Count} 条");
+                    return (false, translated);
+                }
+
+                var item = exportResult.SentenceList[i];
+
+                // 跳过已翻译的词条
+                if (exportResult.TranslatedIds.Contains(item.GlobalId))
+                {
+                    translated.AddSentence(item.GlobalId, item.TextContent, item.FileName);
+                    progress?.Report(new TranslationProgress
+                    {
+                        Current = i + 1,
+                        Total = total,
+                        CurrentText = item.TextContent + " (已翻译)"
+                    });
+                    continue;
+                }
+
+                Logger.Debug($"翻译进度 [{i + 1}/{total}]: {item.TextContent}");
+
+                progress?.Report(new TranslationProgress
+                {
+                    Current = i + 1,
+                    Total = total,
+                    CurrentText = item.TextContent
+                });
+
+                // 模拟 AI 请求延迟
+                await Task.Delay(10, cancellationToken);
+
+                // 模拟：翻译结果 = 原文 + "(translated)"
+                translated.AddSentence(item.GlobalId, item.TextContent + "(translated)", item.FileName);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Warn($"AI 翻译被用户取消，已翻译 {translated.SentenceList.Count} 条");
+                return (false, translated);
+            }
+        }
+
+        Logger.Info("AI 翻译完成");
+        return (true, translated);
+    }
 }
