@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Collections.ObjectModel;
 using NLog;
 using System.IO;
@@ -19,7 +19,7 @@ namespace SMT.WPF
     {
         private static readonly string DbPath = Path.Combine(Directory.GetCurrentDirectory(), "db");
         private static readonly string GlossaryPath = Path.Combine(Directory.GetCurrentDirectory(), "glossaries");
-        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.16.2";
+        private static readonly string SoftwareName = "魂游MOD翻译工具 v2.17";
 
         private static MemoryTarget MemoryTarget = new MemoryTarget
         {
@@ -178,6 +178,8 @@ namespace SMT.WPF
         private void AiModeBtn_OnClick(object sender, RoutedEventArgs e)
         {
             Logger.Info("切换到 AI 翻译");
+            ShowTaskResult(false, "", "开发中，暂不开放");
+            return;
             AiModeBtn.Style = (Style)FindResource(AdonisUI.Styles.AccentButton);
             ManualModeBtn.Style = null;
             ManualTranslatePanel.Visibility = Visibility.Collapsed;
@@ -292,6 +294,8 @@ namespace SMT.WPF
         private void SaveAiConfig()
         {
             var reasoningEffort = ((System.Windows.Controls.ComboBoxItem)ReasoningEffortComboBox.SelectedItem)?.Content?.ToString() ?? "medium";
+            int.TryParse(BatchSizeTextBox.Text.Trim(), out var batchSize);
+            if (batchSize < 1) batchSize = 50;
             var data = new AiConfigData
             {
                 BaseUrl = BaseUrlTextBox.Text.Trim(),
@@ -299,7 +303,8 @@ namespace SMT.WPF
                 ModelName = ModelNameTextBox.Text.Trim(),
                 ReasoningEffort = reasoningEffort,
                 EnableDeepThink = DeepThinkCheckBox.IsChecked ?? false,
-                CustomPrompt = CustomPromptTextBox.Text.Trim()
+                CustomPrompt = CustomPromptTextBox.Text.Trim(),
+                BatchSize = batchSize
             };
             AiConfig.Save(data);
         }
@@ -312,6 +317,7 @@ namespace SMT.WPF
             ModelNameTextBox.Text = data.ModelName;
             CustomPromptTextBox.Text = data.CustomPrompt;
             DeepThinkCheckBox.IsChecked = data.EnableDeepThink;
+            BatchSizeTextBox.Text = data.BatchSize.ToString();
             //设置推理等级选中项
             foreach (var item in ReasoningEffortComboBox.Items)
             {
@@ -450,7 +456,8 @@ namespace SMT.WPF
                     ((System.Windows.Controls.ComboBoxItem)ReasoningEffortComboBox.SelectedItem)?.Content?.ToString() ??
                     "medium",
                 EnableDeepThink = DeepThinkCheckBox.IsChecked ?? false,
-                CustomPrompt = CustomPromptTextBox.Text.Trim()
+                CustomPrompt = CustomPromptTextBox.Text.Trim(),
+                BatchSize = int.TryParse(BatchSizeTextBox.Text.Trim(), out var bs) && bs > 0 ? bs : 50
             };
 
             if (!ValidateAiConfig(config)) return;
@@ -467,10 +474,13 @@ namespace SMT.WPF
 
             try
             {
+                var vocabList = UseGlossaryCheckBox.IsChecked == true
+                    ? this.Glossaries.ToList()
+                    : null;
                 var progress = new Progress<TranslationProgress>(p => progressWindow.Report(p));
                 var token = progressWindow.CancellationTokenSource.Token;
                 var (success, translated) = await Task.Run(
-                    () => AiClient.TranslateWithAiAsync(res, config, progress, token), token);
+                    () => AiClient.TranslateWithAiAsync(res, config, vocabList, progress, token));
                 CloseProgressWindowSafely(progressWindow);
                 Activate();
 
@@ -482,7 +492,7 @@ namespace SMT.WPF
                 {
                     // 部分完成，询问是否保存
                     var saveResult = AdonisUI.Controls.MessageBox.Show(
-                        $"已取消翻译，已翻译 {translated.SentenceList.Count} 条，临时结果不会丢失。是否保存已翻译的内容？",
+                        $"翻译未全部完成，已翻译 {translated.SentenceList.Count} 条。是否保存已翻译的内容？",
                         "保存已翻译内容",
                         AdonisUI.Controls.MessageBoxButton.YesNo,
                         AdonisUI.Controls.MessageBoxImage.Question);

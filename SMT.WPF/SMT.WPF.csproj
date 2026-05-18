@@ -13,6 +13,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   
   <ItemGroup>

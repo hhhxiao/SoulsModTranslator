@@ -53,7 +53,7 @@ public class Glossary
                         //如果忽略大小写，就统一使用小写字母来构建正则，方便之后做替换
                         //否则使用原样
                         var key = this._ignoreCase ? kv.Key.ToLower() : kv.Key;
-                        phaseKv.Add(key, kv.Value);
+                        phaseKv[key] = kv.Value; // 后加载的术语表覆盖先加载的
                     }
                 }
 
@@ -98,6 +98,11 @@ public class Glossary
 
         Logger.Info($"共发现{phaseKv.Count} 个短语以及 {_normalRegexList.Count}个正则表达式");
         return true;
+    }
+
+    public Dictionary<string, string> GetPhaseDict()
+    {
+        return _phaseLookup ?? new Dictionary<string, string>();
     }
 
     private string ProcessOne(string input)

@@ -323,6 +323,7 @@
                             <RowDefinition Height="40" />
                             <RowDefinition Height="40" />
                             <RowDefinition Height="120" />
+                            <RowDefinition Height="40" />
                             <RowDefinition Height="50" />
                         </Grid.RowDefinitions>
 
@@ -435,8 +436,25 @@
                                  VerticalScrollBarVisibility="Auto">
                         </TextBox>
 
-                        <!-- 第6行：操作按钮 -->
-                        <StackPanel Grid.Row="5"
+                        <!-- 第6行：每批条数 -->
+                        <Label Grid.Row="5"
+                               Grid.Column="0"
+                               Margin="4"
+                               VerticalContentAlignment="Center"
+                               FontWeight="Normal">
+                            每批条数
+                        </Label>
+                        <TextBox Grid.Row="5"
+                                 Grid.Column="1"
+                                 Margin="4"
+                                 Name="BatchSizeTextBox"
+                                 VerticalContentAlignment="Center"
+                                 MaxLines="1"
+                                 Text="50">
+                        </TextBox>
+
+                        <!-- 第7行：操作按钮 -->
+                        <StackPanel Grid.Row="6"
                                     Grid.Column="1"
                                     Grid.ColumnSpan="3"
                                     Orientation="Horizontal"

@@ -83,59 +83,87 @@ public class EntryCache
     }
 }
 
+public struct TraverseArgs
+{
+    public string FileName;
+    public int FileId;
+    public int EntryId;
+    public int ParaIndex;
+    public string SrcText;
+    public string? DestText;
+
+    public readonly long GlobalEntryId() => (long)FileId * LangFileSet.Mtid + (long)EntryId;
+    public readonly long GlobalParaId() => GlobalEntryId() * 10 + ParaIndex;
+}
+
 public static class Translator
 {
     private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
     private static Action<string, int, string, int> CreateTraverser(
-        DataBase dataBase, //db
-        bool keepAsText, //keep as text
-        Action<string, long, long, string> unTrans, //action for untranslated text
-        /**
-        string  filename
-        long    globalEntryId
-        long    globalParaID
-        long    text
-        */
-        Action<string, long, long, string, string> trans //action for translated text
-    /**
-    string  fileName
-    long    gloablEntryID
-    long    globalParaID
-    string  srcText
-    string  destText
-    */
+        DataBase dataBase,
+        bool keepAsText,
+        Action<TraverseArgs> unTrans,
+        Action<TraverseArgs> trans
     )
     {
         return (string fileName, int fileId, string entryText, int entryId) =>
         {
-            var globalEntryId = (long)fileId * LangFileSet.Mtid + (long)entryId;
-            var res = dataBase.Translate(entryText.Trim(), entryId); //
-            if (res.Key) //匹配成功
+            var res = dataBase.Translate(entryText.Trim(), entryId);
+            if (res.Key)
             {
-                trans(fileName, globalEntryId, globalEntryId * 10, entryText, res.Value);
+                trans(new TraverseArgs
+                {
+                    FileName = fileName,
+                    FileId = fileId,
+                    EntryId = entryId,
+                    ParaIndex = 0,
+                    SrcText = entryText,
+                    DestText = res.Value,
+                });
                 return;
             }
 
-            //匹配不成功
-            if (keepAsText) //不进行下一步翻译
+            if (keepAsText)
             {
-                unTrans(fileName, globalEntryId, globalEntryId * 10, entryText);
+                unTrans(new TraverseArgs
+                {
+                    FileName = fileName,
+                    FileId = fileId,
+                    EntryId = entryId,
+                    ParaIndex = 0,
+                    SrcText = entryText,
+                });
                 return;
             }
 
             var paraList = entryText.Split("\n\n");
             for (var i = 0; i < paraList.Length; i++)
             {
-                //globalParaID = globalEntryId * 10 + paraID
+                var paraIndex = i + 1;
                 res = dataBase.Translate(paraList[i].Trim(), entryId);
                 if (res.Key)
                 {
-                    trans(fileName, globalEntryId, globalEntryId * 10 + (i + 1), paraList[i], res.Value);
+                    trans(new TraverseArgs
+                    {
+                        FileName = fileName,
+                        FileId = fileId,
+                        EntryId = entryId,
+                        ParaIndex = paraIndex,
+                        SrcText = paraList[i],
+                        DestText = res.Value,
+                    });
                 }
                 else
                 {
-                    unTrans(fileName, globalEntryId, globalEntryId * 10 + (i + 1), paraList[i]);
+                    unTrans(new TraverseArgs
+                    {
+                        FileName = fileName,
+                        FileId = fileId,
+                        EntryId = entryId,
+                        ParaIndex = paraIndex,
+                        SrcText = paraList[i],
+                    });
                 }
             }
         };
@@ -160,15 +188,25 @@ public static class Translator
         }
 
         result.Success = true;
-        var set = new HashSet<long>();
+        var idMap = new Dictionary<long, TraverseArgs>();
+        void RegisterEntry(TraverseArgs args)
+        {
+            if (idMap.TryGetValue(args.GlobalParaId(), out var old) && old.SrcText != args.SrcText)
+                Logger.Error("\nID 重复: FileId={0}, EntryId={1}, ParaIndex={2}, File={3} <> FileId={4}, EntryId={5}, ParaIndex={6}, File={7}\n旧: {8}\n新: {9}",
+                    old.FileId, old.EntryId, old.ParaIndex, old.FileName,
+                    args.FileId, args.EntryId, args.ParaIndex, args.FileName,
+                    old.SrcText, args.SrcText);
+            else
+                idMap[args.GlobalParaId()] = args;
+        }
         langFile.ForeachEntryRead(CreateTraverser(db, keepAsText,
-            (fileName, globalEntryId, globalParaId, src) =>
+            args =>
             {
-                result.AddSentence(globalParaId, src, fileName);
-                set.Add(globalEntryId);
+                result.AddSentence(args.GlobalParaId(), args.SrcText, args.FileName);
+                RegisterEntry(args);
             },
-            (fileName, globalEntryId, globalParaId, src, dest) => { set.Add(globalEntryId); }));
-        Logger.Info($"共处理 {set.Count} 段文本");
+            args => RegisterEntry(args)));
+        Logger.Info($"共处理 {idMap.Count}/{result.SentenceList.Count} 段文本");
         Logger.Info("成功生成未翻译文本");
         return result;
     }
@@ -207,21 +245,23 @@ public static class Translator
         var translateCache = new Dictionary<long, EntryCache>();
         Logger.Info($"已成功加载翻译文件, {translated.Count}条文本");
         langFile.ForeachEntryRead(CreateTraverser(db, keepText,
-            (fileName, globalEntryId, globalParaId, src) =>
+            args =>
             {
-                if (!translated.ContainsKey(globalParaId))
+                if (!translated.ContainsKey(args.GlobalParaId()))
                 {
-                    Logger.Error($"无法翻译文本: {src}");
+                    Logger.Error($"无法翻译文本: {args.SrcText}");
                 }
 
-                var dest = translated.GetValueOrDefault(globalParaId, src); //尝试翻译
-                translateCache.TryAdd(globalEntryId, new EntryCache(globalEntryId));
-                translateCache[globalEntryId].AddParagraph(globalParaId, dest);
-            }, //
-            (f, globalEntryId, globalParaId, src, dest) =>
+                var dest = translated.GetValueOrDefault(args.GlobalParaId(), args.SrcText);
+                var geid = args.GlobalEntryId();
+                translateCache.TryAdd(geid, new EntryCache(geid));
+                translateCache[geid].AddParagraph(args.GlobalParaId(), dest);
+            },
+            args =>
             {
-                translateCache.TryAdd(globalEntryId, new EntryCache(globalEntryId));
-                translateCache[globalEntryId].AddParagraph(globalParaId, dest);
+                var geid = args.GlobalEntryId();
+                translateCache.TryAdd(geid, new EntryCache(geid));
+                translateCache[geid].AddParagraph(args.GlobalParaId(), args.DestText!);
             }));
         Logger.Info($"共处理 {translateCache.Count} 段文本");
 

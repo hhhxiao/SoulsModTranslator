@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -30,7 +31,8 @@ public static class AiClient
         string model,
         string prompt,
         string reasoningEffort,
-        bool enableDeepThink)
+        bool enableDeepThink,
+        CancellationToken cancellationToken = default)
     {
         // 参数校验
         if (string.IsNullOrWhiteSpace(baseUrl))
@@ -75,8 +77,8 @@ public static class AiClient
         request.Content = content;
 
         Logger.Info("正在发送 HTTP 请求...");
-        var response = await HttpClient.SendAsync(request);
-        var responseBody = await response.Content.ReadAsStringAsync();
+        var response = await HttpClient.SendAsync(request, cancellationToken);
+        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -110,19 +112,89 @@ public static class AiClient
     /// </summary>
     /// <param name="exportResult">导出结果（含待翻译文本列表）</param>
     /// <param name="config">AI 配置（URL、密钥、模型、提示词等）</param>
+    /// <param name="glossaries">术语表文件路径列表</param>
     /// <param name="progress">进度报告回调</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>(是否全部完成, 已翻译的词条列表)</returns>
     public static async Task<(bool Success, ExportResult Translated)> TranslateWithAiAsync(
         ExportResult exportResult, AiConfigData config,
+        List<string>? glossaries = null,
         IProgress<TranslationProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
         var total = exportResult.SentenceList.Count;
         var alreadyTranslated = exportResult.TranslatedIds.Count;
-        Logger.Info($"AI 翻译开始，共 {total} 条词条，其中 {alreadyTranslated} 条已标记为已翻译");
+        Logger.Info($"AI 翻译开始，共 {total} 条词条，其中 {alreadyTranslated} 条已标记为已翻译，每批 {config.BatchSize} 条");
         var translated = new ExportResult();
 
+        var glossaryDict = LoadGlossaryDict(glossaries);
+
+        // 过滤出待翻译词条，同时跳过已翻译的
+        var toTranslate = FilterUntranslatedItems(exportResult, translated, progress, total, cancellationToken);
+        if (toTranslate == null) return (false, translated);
+
+        // 分批翻译
+        var batchSize = Math.Max(1, config.BatchSize);
+        for (var batchStart = 0; batchStart < toTranslate.Count; batchStart += batchSize)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Logger.Warn($"AI 翻译被用户取消，已翻译 {translated.SentenceList.Count} 条");
+                return (false, translated);
+            }
+
+            var batch = toTranslate.Skip(batchStart).Take(batchSize).ToList();
+            var batchTexts = batch.Select(b => b.Item.TextContent).ToList();
+            var batchEnd = Math.Min(batchStart + batchSize, toTranslate.Count);
+            Logger.Info($"正在翻译第 {batchStart + 1}-{batchEnd}/{toTranslate.Count} 批");
+
+            var displayPrompt = BuildDisplayPrompt(config.CustomPrompt, batchTexts);
+
+            // 调用 AI API 翻译
+            var responseJson = await TranslateBatchAsync(batchTexts, glossaryDict, config, cancellationToken);
+
+            if (responseJson == null)
+            {
+                Logger.Error($"AI 翻译第 {batchStart + 1}-{batchEnd}/{toTranslate.Count} 批请求失败");
+                return (false, translated);
+            }
+
+            ProcessBatchResponse(translated, batch, responseJson);
+
+            // 报告进度
+            progress?.Report(new TranslationProgress
+            {
+                Current = translated.SentenceList.Count,
+                Total = total,
+                CurrentText = displayPrompt
+            });
+        }
+
+        Logger.Info("AI 翻译完成");
+        return (true, translated);
+    }
+
+    private static Dictionary<string, string> LoadGlossaryDict(List<string>? glossaries)
+    {
+        var glossaryDict = new Dictionary<string, string>();
+        if (glossaries is { Count: > 0 })
+        {
+            var glossary = new Glossary(false);
+            if (glossary.Load(glossaries))
+            {
+                glossaryDict = glossary.GetPhaseDict();
+            }
+        }
+
+        return glossaryDict;
+    }
+
+    private static List<(int Index, ExportResult.Item Item)>? FilterUntranslatedItems(
+        ExportResult exportResult, ExportResult translated,
+        IProgress<TranslationProgress>? progress, int total,
+        CancellationToken cancellationToken)
+    {
+        var toTranslate = new List<(int Index, ExportResult.Item Item)>();
         for (var i = 0; i < total; i++)
         {
             try
@@ -130,12 +202,10 @@ public static class AiClient
                 if (cancellationToken.IsCancellationRequested)
                 {
                     Logger.Warn($"AI 翻译被用户取消，已翻译 {translated.SentenceList.Count} 条");
-                    return (false, translated);
+                    return null;
                 }
 
                 var item = exportResult.SentenceList[i];
-
-                // 跳过已翻译的词条
                 if (exportResult.TranslatedIds.Contains(item.GlobalId))
                 {
                     translated.AddSentence(item.GlobalId, item.TextContent, item.FileName);
@@ -148,29 +218,97 @@ public static class AiClient
                     continue;
                 }
 
-                Logger.Debug($"翻译进度 [{i + 1}/{total}]: {item.TextContent}");
-
-                progress?.Report(new TranslationProgress
-                {
-                    Current = i + 1,
-                    Total = total,
-                    CurrentText = item.TextContent
-                });
-
-                // 模拟 AI 请求延迟
-                await Task.Delay(10, cancellationToken);
-
-                // 模拟：翻译结果 = 原文 + "(translated)"
-                translated.AddSentence(item.GlobalId, item.TextContent + "(translated)", item.FileName);
+                toTranslate.Add((i, item));
             }
             catch (OperationCanceledException)
             {
                 Logger.Warn($"AI 翻译被用户取消，已翻译 {translated.SentenceList.Count} 条");
-                return (false, translated);
+                return null;
             }
         }
 
-        Logger.Info("AI 翻译完成");
-        return (true, translated);
+        return toTranslate;
+    }
+
+    private static string BuildDisplayPrompt(string customPrompt, List<string> batchTexts)
+    {
+        var data = new Dictionary<string, object>
+        {
+            ["sentences"] = batchTexts
+        };
+        var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+        return customPrompt.Replace("{sentences}", json);
+    }
+
+    private static void ProcessBatchResponse(ExportResult translated,
+        List<(int Index, ExportResult.Item Item)> batch, string responseJson)
+    {
+        var translatedTexts = ParseTranslatedSentences(responseJson, batch.Count);
+        for (var j = 0; j < batch.Count; j++)
+        {
+            var (_, item) = batch[j];
+            var dest = j < translatedTexts.Count ? translatedTexts[j] : item.TextContent;
+            translated.AddSentence(item.GlobalId, dest, item.FileName);
+        }
+    }
+
+    /// <summary>
+    /// 调用 AI API 翻译一批句子
+    /// </summary>
+    private static async Task<string?> TranslateBatchAsync(
+        List<string> sentences, Dictionary<string, string> glossaryDict,
+        AiConfigData config, CancellationToken cancellationToken)
+    {
+        var requestData = new Dictionary<string, object>
+        {
+            ["glossaries"] = glossaryDict,
+            ["sentences"] = sentences
+        };
+        var requestJson = JsonSerializer.Serialize(requestData, new JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        });
+        var prompt = config.CustomPrompt.Replace("{sentences}", requestJson);
+
+        try
+        {
+            return await SendChatRequestAsync(
+                config.BaseUrl, config.ApiKey, config.ModelName,
+                prompt, config.ReasoningEffort, config.EnableDeepThink, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"翻译批次请求失败: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 从 API 返回的 JSON 中解析翻译后的句子列表
+    /// </summary>
+    private static List<string> ParseTranslatedSentences(string responseJson, int expectedCount)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(responseJson);
+            if (doc.RootElement.TryGetProperty("sentences", out var sentencesElement))
+            {
+                var result = new List<string>();
+                foreach (var element in sentencesElement.EnumerateArray())
+                {
+                    result.Add(element.GetString() ?? "");
+                }
+                return result;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn($"解析翻译结果 JSON 失败: {ex.Message}");
+        }
+
+        return new List<string>();
     }
 }

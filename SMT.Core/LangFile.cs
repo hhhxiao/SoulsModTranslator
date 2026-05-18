@@ -4,10 +4,17 @@ using SoulsFormats;
 
 namespace SMT.core;
 
+public struct BndInfo
+{
+    public int Id;
+    public BND4 Bnd;
+}
+
 public class LangFileSet
 {
     private static readonly Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-    public const long Mtid = 10000000000;
+    public const long Mtid = 1000000000;
+    public const int Fid = 1000;
 
     public static readonly List<string> BlackFileList = new()
     {
@@ -24,7 +31,7 @@ public class LangFileSet
     }
 
 
-    public Dictionary<string, BND4> Bnds = new();
+    public Dictionary<string, BndInfo> Bnds = new();
 
     public bool Load(string langRootPath)
     {
@@ -37,6 +44,7 @@ public class LangFileSet
         Logger.Info($"语言文件的目录为: {langRootPath}");
         //找到所有的bnd文件并编号
         var info = new DirectoryInfo(langRootPath);
+        var bndId = 1;
         foreach (var bndFile in info.GetFiles())
         {
             if (!bndFile.Name.EndsWith(".msgbnd.dcx")) continue;
@@ -45,12 +53,20 @@ public class LangFileSet
             try
             {
                 var bnd = BND4.Read(Path.Combine(langRootPath, bndFile.Name));
-                Bnds[bndFile.Name] = bnd;
+                Bnds[bndFile.Name] = new BndInfo { Id = bndId++, Bnd = bnd };
             }
             catch (Exception e)
             {
                 Logger.Error("不合法的dcx文件格式.\n\n" + e.Message);
                 return false;
+            }
+        }
+
+        foreach (var (bndName, bnd) in Bnds)
+        {
+            foreach (var file in bnd.Bnd.Files)
+            {
+                Logger.Debug($"文件:{bndName}  bnd:{file.ID} fid:{Fid * bnd.Id + file.ID}");
             }
         }
 
@@ -70,7 +86,7 @@ public class LangFileSet
         foreach (var (bndName, bnd) in Bnds)
         {
             var path = Path.Combine(folder, bndName);
-            bnd.Write(path);
+            bnd.Bnd.Write(path);
             Logger.Info($"写入文件 {path}...");
         }
 
@@ -82,7 +98,7 @@ public class LangFileSet
     {
         foreach (var (bndName, bnd) in Bnds)
         {
-            foreach (var f in bnd.Files)
+            foreach (var f in bnd.Bnd.Files)
             {
                 var fmgFileName = Path.GetFileNameWithoutExtension(f.Name);
                 if (BlackFileList.Contains(fmgFileName)) continue;
@@ -90,7 +106,7 @@ public class LangFileSet
                 foreach (var entry in fmg.Entries)
                 {
                     if (entry.Text != null)
-                        traverser(fmgFileName, f.ID, entry.Text, entry.ID);
+                        traverser(fmgFileName, Fid * bnd.Id + f.ID, entry.Text, entry.ID);
                 }
             }
         }
@@ -101,13 +117,13 @@ public class LangFileSet
     {
         foreach (var (bndName, bnd) in Bnds)
         {
-            foreach (var file in bnd.Files)
+            foreach (var file in bnd.Bnd.Files)
             {
                 var fmg = FMG.Read(file.Bytes);
                 foreach (var entry in fmg.Entries)
                 {
                     if (entry.Text != null)
-                        entry.Text = replacer(file.Name, file.ID, entry.Text, entry.ID);
+                        entry.Text = replacer(file.Name, Fid * bnd.Id + file.ID, entry.Text, entry.ID);
                 }
                 file.Bytes = fmg.Write();
             }
@@ -125,7 +141,7 @@ public class LangFileSet
 
         foreach (var (bndName, bnd) in Bnds)
         {
-            foreach (var file in bnd.Files)
+            foreach (var file in bnd.Bnd.Files)
             {
                 file.Name = file.Name.Replace(innerLang, newLang);
                 var fmg = FMG.Read(file.Bytes);
@@ -142,7 +158,7 @@ public class LangFileSet
 
         foreach (var (bndName, bnd) in Bnds)
         {
-            foreach (var file in bnd.Files)
+            foreach (var file in bnd.Bnd.Files)
             {
                 var pathTokens = file.Name.Split("\\");
                 for (var i = 0; i < pathTokens.Length; i++)
@@ -171,7 +187,7 @@ public class LangFileSet
         {
             var bndPath = Path.Combine(output, bndName.Replace(".msgbnd.dcx", ""));
             Directory.CreateDirectory(bndPath);
-            foreach (var f in bnd.Files)
+            foreach (var f in bnd.Bnd.Files)
             {
                 var fmg = FMG.Read(f.Bytes);
                 var str = "";

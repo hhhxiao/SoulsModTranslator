@@ -11,6 +11,7 @@ public class AiConfigData
     public string ReasoningEffort { get; set; } = "medium";
     public bool EnableDeepThink { get; set; }
     public string CustomPrompt { get; set; } = "";
+    public int BatchSize { get; set; } = 50;
 }
 
 public static class AiConfig
